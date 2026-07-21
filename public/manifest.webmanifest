@@ -1,0 +1,11 @@
+{
+  "name": "PACEFORGE Hybrid Fitness Timer",
+  "short_name": "PACEFORGE",
+  "description": "Voice-guided CrossFit and HYROX training timer",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0b0a",
+  "theme_color": "#0a0b0a",
+  "lang": "ko-KR",
+  "orientation": "any"
+}

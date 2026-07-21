@@ -1,0 +1,18 @@
+{
+  "name": "paceforge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Voice-guided hybrid fitness timer for CrossFit and HYROX training",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "node --check server.js && node --check public/app.js && node scripts/build.js"
+  },
+  "keywords": ["fitness", "timer", "crossfit", "hyrox", "interval"],
+  "license": "UNLICENSED",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

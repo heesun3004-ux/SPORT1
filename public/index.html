@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0b0a">
+  <meta name="description" content="크로스핏과 HYROX 훈련을 위한 음성 안내형 인터벌 타이머. 세트, 휴식, 러닝과 스테이션 전환을 놓치지 마세요.">
+  <meta property="og:title" content="PACEFORGE — Train the transition">
+  <meta property="og:description" content="크로스핏과 HYROX 선수를 위한 음성 안내형 하이브리드 피트니스 타이머">
+  <meta property="og:image" content="/assets/paceforge-hero.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>PACEFORGE — Hybrid Fitness Timer</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preload" as="image" href="/assets/paceforge-hero.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#studio">운동 설정으로 바로가기</a>
+
+  <header class="site-header" id="top">
+    <a class="brand" href="#top" aria-label="PACEFORGE 홈">
+      <span class="brand-mark">PF</span>
+      <span>PACEFORGE</span>
+    </a>
+    <nav class="nav-links" aria-label="주요 메뉴">
+      <a href="#modes">모드</a>
+      <a href="#studio">타이머</a>
+      <a href="#history">기록</a>
+    </nav>
+    <a class="nav-cta" href="#studio">START TRAINING <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span></span> HYBRID PERFORMANCE TIMER</p>
+        <h1 id="hero-title">전환을 지배하면<br><em>기록이 달라진다.</em></h1>
+        <p class="hero-lead">크로스핏의 매 세트와 HYROX의 모든 구간을 놓치지 않도록. 큰 화면, 정확한 시간, 한국어 음성이 당신의 다음 움직임을 먼저 알려줍니다.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#studio">나의 타이머 만들기 <span aria-hidden="true">→</span></a>
+          <button class="button button-ghost" type="button" data-quick-mode="hyrox">HYROX 시뮬레이션</button>
+        </div>
+        <div class="hero-metrics" aria-label="주요 기능">
+          <div><strong>06</strong><span>TRAINING MODES</span></div>
+          <div><strong>16</strong><span>HYROX STAGES</span></div>
+          <div><strong>LIVE</strong><span>VOICE CUES</span></div>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-label="슬레드 푸시와 러닝을 수행하는 선수들">
+        <img src="/assets/paceforge-hero.jpg" alt="어두운 실내 경기장에서 슬레드 푸시와 러닝을 수행하는 두 선수" width="1672" height="941">
+        <div class="live-card" aria-hidden="true">
+          <span class="live-dot"></span>
+          <div><small>NEXT SIGNAL</small><strong>00:10</strong></div>
+          <b>WORK</b>
+        </div>
+        <p class="visual-caption">BUILT FOR THE MOMENT<br>BETWEEN DONE &amp; NEXT.</p>
+      </div>
+    </section>
+
+    <section class="signal-strip" aria-label="타이머 진행 예시">
+      <span>01</span><strong>WORK · 01:00</strong><i></i>
+      <span>02</span><strong>REST · 00:30</strong><i></i>
+      <span>03</span><strong>“2세트 시작”</strong><i></i>
+      <span>04</span><strong>REPEAT</strong>
+    </section>
+
+    <section class="section modes-section" id="modes" aria-labelledby="modes-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow"><span></span> BUILT AROUND THE SPORT</p>
+          <h2 id="modes-title">운동 방식이 다르면<br>타이머도 달라야 한다.</h2>
+        </div>
+        <p>시간이 운동을 이끄는 크로스핏과, 완주가 다음 구간을 여는 HYROX. 각 종목의 실제 흐름을 하나의 엔진 안에서 정확히 분리했습니다.</p>
+      </div>
+
+      <div class="mode-grid">
+        <article class="mode-card mode-card-featured">
+          <div class="mode-card-top"><span>01</span><span class="mode-tag">QUICK START</span></div>
+          <h3>INTERVAL</h3>
+          <p>운동·휴식·세트 수를 자유롭게 조합하고, 비프음과 음성 안내로 화면을 보지 않고도 훈련합니다.</p>
+          <button type="button" data-quick-mode="interval">60초 / 30초로 시작 <span>→</span></button>
+        </article>
+        <article class="mode-card">
+          <div class="mode-card-top"><span>02</span><span class="mode-tag">CROSSFIT</span></div>
+          <h3>WOD CLOCK</h3>
+          <p>AMRAP, EMOM, Tabata와 For Time. 시간 형식에 맞춰 카운트다운과 라운드 전환을 다르게 안내합니다.</p>
+          <button type="button" data-quick-mode="amrap">12분 AMRAP 설정 <span>→</span></button>
+        </article>
+        <article class="mode-card mode-card-orange">
+          <div class="mode-card-top"><span>03</span><span class="mode-tag">FITNESS RACE</span></div>
+          <h3>HYROX 8</h3>
+          <p>8회의 1km 러닝과 8개 스테이션을 수동 완료 방식으로 진행하고 구간별 스플릿을 기록합니다.</p>
+          <button type="button" data-quick-mode="hyrox">전체 레이스 불러오기 <span>→</span></button>
+        </article>
+      </div>
+    </section>
+
+    <section class="section studio-section" id="studio" aria-labelledby="studio-title">
+      <div class="studio-heading">
+        <div>
+          <p class="eyebrow eyebrow-dark"><span></span> SESSION BUILDER</p>
+          <h2 id="studio-title">오늘의 고통을<br>정확하게 설계하세요.</h2>
+        </div>
+        <p class="studio-status"><span></span> AUDIO ENGINE READY</p>
+      </div>
+
+      <div class="studio-shell">
+        <div class="mode-tabs" role="tablist" aria-label="운동 모드 선택">
+          <button class="mode-tab active" type="button" role="tab" aria-selected="true" data-mode="interval">INTERVAL</button>
+          <button class="mode-tab" type="button" role="tab" aria-selected="false" data-mode="amrap">AMRAP</button>
+          <button class="mode-tab" type="button" role="tab" aria-selected="false" data-mode="emom">EMOM</button>
+          <button class="mode-tab" type="button" role="tab" aria-selected="false" data-mode="tabata">TABATA</button>
+          <button class="mode-tab" type="button" role="tab" aria-selected="false" data-mode="fortime">FOR TIME</button>
+          <button class="mode-tab" type="button" role="tab" aria-selected="false" data-mode="hyrox">HYROX</button>
+        </div>
+
+        <div class="builder-grid">
+          <form class="session-form" id="sessionForm">
+            <div class="form-intro">
+              <span id="modeNumber">01</span>
+              <div><small>SELECTED PROTOCOL</small><h3 id="modeTitle">CUSTOM INTERVAL</h3></div>
+            </div>
+
+            <div id="standardFields" class="field-grid">
+              <label class="field"><span>준비 시간</span><div><input id="prepTime" type="number" min="0" max="300" value="10" inputmode="numeric"><b>초</b></div></label>
+              <label class="field" id="workField"><span>운동 시간</span><div><input id="workTime" type="number" min="5" max="7200" value="60" inputmode="numeric"><b>초</b></div></label>
+              <label class="field" id="restField"><span>휴식 시간</span><div><input id="restTime" type="number" min="0" max="3600" value="30" inputmode="numeric"><b>초</b></div></label>
+              <label class="field" id="roundField"><span>세트 수</span><div><input id="rounds" type="number" min="1" max="100" value="5" inputmode="numeric"><b>SET</b></div></label>
+            </div>
+
+            <div id="hyroxFields" class="hyrox-fields" hidden>
+              <label class="field field-wide"><span>경기 디비전</span><div><select id="division"><option value="women">WOMEN OPEN</option><option value="womenPro">WOMEN PRO</option><option value="men">MEN OPEN</option><option value="menPro">MEN PRO</option></select></div></label>
+              <div class="hyrox-route" id="hyroxRoute" aria-label="HYROX 경기 순서"></div>
+            </div>
+
+            <label class="session-name"><span>세션 이름</span><input id="sessionName" type="text" maxlength="40" value="ENGINE BUILDER" autocomplete="off"></label>
+
+            <div class="cue-options">
+              <label><input id="soundEnabled" type="checkbox" checked><span class="toggle"></span><b>비프음</b></label>
+              <label><input id="voiceEnabled" type="checkbox" checked><span class="toggle"></span><b>한국어 음성</b></label>
+              <label><input id="vibrationEnabled" type="checkbox"><span class="toggle"></span><b>진동</b></label>
+            </div>
+
+            <button class="start-session" id="startSession" type="submit">
+              <span>START SESSION</span><b aria-hidden="true">→</b>
+            </button>
+            <p class="form-note">시작 버튼을 누르면 브라우저의 오디오가 활성화됩니다. 스페이스바로 일시정지할 수 있습니다.</p>
+          </form>
+
+          <aside class="session-preview" aria-label="세션 미리보기">
+            <div class="preview-top"><span>LIVE PREVIEW</span><b id="previewMode">INTERVAL</b></div>
+            <div class="preview-clock" id="previewClock">01:00</div>
+            <p id="previewLabel">WORK / SET 1 OF 5</p>
+            <div class="preview-progress"><span id="previewProgress"></span></div>
+            <div class="preview-next"><small>NEXT</small><strong id="previewNext">REST · 00:30</strong></div>
+            <div class="preview-specs">
+              <div><span>총 시간</span><strong id="totalTime">07:00</strong></div>
+              <div><span>전환 방식</span><strong id="transitionType">AUTO</strong></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reliability-section" aria-labelledby="reliability-title">
+      <div class="reliability-copy">
+        <p class="eyebrow"><span></span> ENGINEERED FOR THE FLOOR</p>
+        <h2 id="reliability-title">운동 중에는<br>타이머를 의심하지 마세요.</h2>
+        <p>PACEFORGE는 매 틱을 단순히 차감하지 않습니다. 실제 시작 시각을 기준으로 남은 시간을 다시 계산해 화면 전환이나 순간적인 성능 저하 뒤에도 정확한 흐름을 유지합니다.</p>
+      </div>
+      <div class="feature-list">
+        <article><span>01</span><div><h3>ABSOLUTE TIME</h3><p>백그라운드에 다녀와도 실제 경과 시간으로 즉시 보정합니다.</p></div></article>
+        <article><span>02</span><div><h3>VOICE FIRST</h3><p>종료 10초 전과 세트 전환을 한국어 음성·비프음으로 안내합니다.</p></div></article>
+        <article><span>03</span><div><h3>SESSION RECOVERY</h3><p>실수로 새로고침해도 현재 세션을 기기에 저장해 복구할 수 있습니다.</p></div></article>
+        <article><span>04</span><div><h3>SCREEN AWAKE</h3><p>지원되는 기기에서는 운동 중 화면이 자동으로 꺼지지 않게 유지합니다.</p></div></article>
+      </div>
+    </section>
+
+    <section class="section history-section" id="history" aria-labelledby="history-title">
+      <div class="history-heading"><div><p class="eyebrow eyebrow-dark"><span></span> LOCAL HISTORY</p><h2 id="history-title">마친 세션은<br>기록으로 남습니다.</h2></div><button id="clearHistory" class="text-button" type="button">기록 지우기</button></div>
+      <div class="history-list" id="historyList"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="brand" href="#top"><span class="brand-mark">PF</span><span>PACEFORGE</span></a>
+    <p>TRAIN THE TRANSITION.<br>OWN THE NEXT REP.</p>
+    <small>본 서비스는 CrossFit, LLC 또는 HYROX World GmbH와 공식 제휴된 서비스가 아닙니다. 공식 경기 전에는 최신 규정을 확인하세요.</small>
+  </footer>
+
+  <div class="recovery-banner" id="recoveryBanner" hidden role="status">
+    <div><strong>중단된 세션이 있습니다.</strong><span id="recoveryInfo">이어서 진행할 수 있습니다.</span></div>
+    <button id="discardRecovery" type="button">삭제</button>
+    <button id="resumeRecovery" type="button">이어서 시작</button>
+  </div>
+
+  <section class="timer-screen" id="timerScreen" hidden aria-modal="true" role="dialog" aria-label="라이브 운동 타이머">
+    <header class="timer-header">
+      <div class="brand"><span class="brand-mark">PF</span><span>PACEFORGE</span></div>
+      <div class="timer-session-name" id="liveSessionName">ENGINE BUILDER</div>
+      <button class="icon-button" id="toggleFullscreen" type="button" aria-label="전체 화면 전환">⛶</button>
+    </header>
+
+    <main class="timer-main" id="timerMain">
+      <p class="timer-state" id="timerState"><span></span> GET READY</p>
+      <div class="timer-value" id="timerValue" aria-live="off">00:10</div>
+      <h2 class="timer-label" id="timerLabel">준비하세요</h2>
+      <p class="timer-meta" id="timerMeta">SET 1 / 5</p>
+      <div class="timer-bar"><span id="timerBarFill"></span></div>
+      <div class="timer-next"><small>NEXT UP</small><strong id="timerNext">WORK · 01:00</strong></div>
+    </main>
+
+    <footer class="timer-controls">
+      <button id="previousPhase" type="button"><span aria-hidden="true">↶</span><b>이전</b></button>
+      <button class="pause-button" id="pauseTimer" type="button"><span id="pauseIcon" aria-hidden="true">Ⅱ</span><b id="pauseLabel">일시정지</b></button>
+      <button id="nextPhase" type="button"><span aria-hidden="true">→</span><b id="nextLabel">다음</b></button>
+      <button id="endSession" type="button"><span aria-hidden="true">×</span><b>종료</b></button>
+    </footer>
+  </section>
+
+  <section class="result-screen" id="resultScreen" hidden aria-modal="true" role="dialog" aria-labelledby="resultTitle">
+    <div class="result-panel">
+      <p class="eyebrow eyebrow-dark"><span></span> SESSION COMPLETE</p>
+      <h2 id="resultTitle">오늘의 전환을<br>완주했습니다.</h2>
+      <div class="result-time"><small>TOTAL TIME</small><strong id="resultTime">00:00</strong></div>
+      <div class="split-list" id="splitList"></div>
+      <div class="result-actions"><button id="closeResult" class="button button-dark" type="button">홈으로</button><button id="repeatSession" class="button button-outline-dark" type="button">같은 세션 반복</button></div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
