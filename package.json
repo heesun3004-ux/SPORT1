@@ -7,12 +7,22 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "build": "node --check server.js && node --check public/app.js && node scripts/build.js"
+    "build": "node --check server.js && node --check public/app.js && node scripts/build.js",
+    "test": "node --test tests/*.test.js"
   },
-  "keywords": ["fitness", "timer", "crossfit", "hyrox", "interval"],
+  "keywords": [
+    "fitness",
+    "timer",
+    "crossfit",
+    "hyrox",
+    "interval"
+  ],
   "license": "UNLICENSED",
   "type": "commonjs",
   "dependencies": {
     "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
   }
 }
