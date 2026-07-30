@@ -1,21 +1,4 @@
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0a0b0a">
-  <meta name="description" content="크로스핏과 HYROX 훈련을 위한 음성 안내형 인터벌 타이머. 세트, 휴식, 러닝과 스테이션 전환을 놓치지 마세요.">
-  <meta property="og:title" content="PACEFORGE — Train the transition">
-  <meta property="og:description" content="크로스핏과 HYROX 선수를 위한 음성 안내형 하이브리드 피트니스 타이머">
-  <meta property="og:image" content="/assets/paceforge-hero.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <title>PACEFORGE — Hybrid Fitness Timer</title>
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="preload" as="image" href="/assets/paceforge-hero.jpg" type="image/jpeg">
-  <link rel="stylesheet" href="/styles.css">
-  <script src="/app.js" defer></script>
-</head>
-<body>
+export const paceforgeMarkup = String.raw`
   <a class="skip-link" href="#studio">운동 설정으로 바로가기</a>
 
   <header class="site-header" id="top">
@@ -231,5 +214,4 @@
   </section>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-</body>
-</html>
+`;
