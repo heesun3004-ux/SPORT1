@@ -169,6 +169,10 @@
     const isHyrox = mode === 'hyrox';
     refs.standardFields.hidden = isHyrox;
     refs.hyroxFields.hidden = !isHyrox;
+    refs.standardFields.querySelectorAll('input').forEach((input) => {
+      input.disabled = isHyrox;
+    });
+    refs.division.disabled = !isHyrox;
     refs.restField.hidden = ['amrap', 'emom', 'fortime'].includes(mode);
     refs.roundField.hidden = ['amrap', 'fortime'].includes(mode);
     refs.workField.hidden = isHyrox;

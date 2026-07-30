@@ -29,6 +29,14 @@ test("all six workout modes and the interactive engine are preserved", () => {
   assert.match(appCode, /HYROX_STATIONS/);
 });
 
+test("HYROX disables hidden standard inputs so native form validation cannot block start", () => {
+  assert.match(
+    appCode,
+    /standardFields\.querySelectorAll\('input'\).*input\.disabled = isHyrox/s,
+  );
+  assert.match(appCode, /division\.disabled = !isHyrox/);
+});
+
 test("metadata and health route are provided by Next.js", () => {
   assert.match(layout, /export const metadata/);
   assert.match(layout, /export const viewport/);
