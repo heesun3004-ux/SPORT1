@@ -37,6 +37,15 @@ test("HYROX disables hidden standard inputs so native form validation cannot blo
   assert.match(appCode, /division\.disabled = !isHyrox/);
 });
 
+test("boxing-style transition cues distinguish work, rest, warning, and finish", () => {
+  for (const cue of ["warning", "rest", "round", "finish"]) {
+    assert.match(appCode, new RegExp(`kind === '${cue}'`));
+  }
+  assert.match(appCode, /phase\.type === 'rest' \? 'rest'/);
+  assert.match(appCode, /second === 10 && phase\.type === 'rest'/);
+  assert.match(markup, /경기장 신호음/);
+});
+
 test("metadata and health route are provided by Next.js", () => {
   assert.match(layout, /export const metadata/);
   assert.match(layout, /export const viewport/);

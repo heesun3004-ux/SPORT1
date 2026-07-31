@@ -121,7 +121,7 @@ export const paceforgeMarkup = String.raw`
             <label class="session-name"><span>세션 이름</span><input id="sessionName" type="text" maxlength="40" value="ENGINE BUILDER" autocomplete="off"></label>
 
             <div class="cue-options">
-              <label><input id="soundEnabled" type="checkbox" checked><span class="toggle"></span><b>비프음</b></label>
+              <label><input id="soundEnabled" type="checkbox" checked><span class="toggle"></span><b>경기장 신호음</b></label>
               <label><input id="voiceEnabled" type="checkbox" checked><span class="toggle"></span><b>한국어 음성</b></label>
               <label><input id="vibrationEnabled" type="checkbox"><span class="toggle"></span><b>진동</b></label>
             </div>

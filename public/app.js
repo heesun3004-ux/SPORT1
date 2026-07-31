@@ -304,24 +304,45 @@
     if (audioContext?.state === 'suspended') await audioContext.resume();
   }
 
-  function beep(kind = 'tick') {
-    if (!activeSession?.cues.sound || !audioContext) return;
+  function scheduleTone(frequency, offset, duration, volume, type = 'sine') {
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
-    const now = audioContext.currentTime;
-    const settings = {
-      tick: [760, 0.09, 0.08],
-      start: [1080, 0.22, 0.16],
-      finish: [880, 0.48, 0.18],
-    }[kind];
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(settings[0], now);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(settings[2], now + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + settings[1]);
+    const start = audioContext.currentTime + offset;
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(gain).connect(audioContext.destination);
-    oscillator.start(now);
-    oscillator.stop(now + settings[1] + 0.02);
+    oscillator.start(start);
+    oscillator.stop(start + duration + 0.03);
+  }
+
+  function ringBell(offset = 0, pitch = 1) {
+    scheduleTone(520 * pitch, offset, 0.7, 0.16, 'sine');
+    scheduleTone(780 * pitch, offset, 0.52, 0.08, 'triangle');
+    scheduleTone(1160 * pitch, offset, 0.34, 0.035, 'sine');
+  }
+
+  function beep(kind = 'tick') {
+    if (!activeSession?.cues.sound || !audioContext) return;
+    if (kind === 'tick') {
+      scheduleTone(820, 0, 0.09, 0.09);
+    } else if (kind === 'warning') {
+      [0, 0.16, 0.32].forEach((offset) => scheduleTone(1450, offset, 0.11, 0.1, 'square'));
+    } else if (kind === 'rest') {
+      ringBell(0, 0.78);
+      ringBell(0.32, 0.66);
+    } else if (kind === 'round') {
+      ringBell(0, 1);
+      ringBell(0.24, 1.08);
+    } else if (kind === 'finish') {
+      ringBell(0, 0.92);
+      ringBell(0.3, 0.92);
+      ringBell(0.6, 1.08);
+    } else {
+      scheduleTone(1080, 0, 0.22, 0.16);
+    }
   }
 
   function speak(text) {
@@ -343,11 +364,11 @@
   function phaseAnnouncement(phase) {
     if (phase.type === 'prep') return '운동을 시작합니다. 준비하세요.';
     if (phase.type === 'rest') return `${activeSession.rest}초 휴식입니다.`;
-    if (activeSession.mode === 'emom') return `${phase.round}분 시작`;
-    if (activeSession.mode === 'hyrox') return `${phase.label}, ${phase.target} 시작`;
-    if (activeSession.mode === 'fortime') return '포 타임 시작';
-    if (activeSession.mode === 'amrap') return '에이맵 시작';
-    return `${phase.round}세트 시작`;
+    if (activeSession.mode === 'emom') return `${phase.round}분 시작입니다.`;
+    if (activeSession.mode === 'hyrox') return `${phase.label}, ${phase.target} 시작입니다.`;
+    if (activeSession.mode === 'fortime') return '포 타임 시작입니다.';
+    if (activeSession.mode === 'amrap') return '에이맵 시작입니다.';
+    return `${phase.round}세트 시작입니다.`;
   }
 
   async function requestWakeLock() {
@@ -406,7 +427,7 @@
     lastCueSecond = null;
 
     if (activeSession.status === 'running') {
-      beep('start');
+      beep(phase.type === 'rest' ? 'rest' : phase.type === 'prep' ? 'start' : 'round');
       vibrate([80]);
       speak(phaseAnnouncement(phase));
     }
@@ -525,7 +546,11 @@
     const second = Math.ceil(remaining / 1000);
     if (second === lastCueSecond) return;
     lastCueSecond = second;
-    if (second === 10 && phase.type === 'rest') speak('10초 후 시작합니다.');
+    if (second === 10 && phase.type === 'rest') {
+      beep('warning');
+      vibrate([45, 70, 45, 70, 45]);
+      speak('10초 후 시작합니다. 준비하세요.');
+    }
     if ([3, 2, 1].includes(second)) {
       beep('tick');
       vibrate(30);
