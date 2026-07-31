@@ -322,11 +322,11 @@
     oscillator.stop(start + duration + 0.03);
   }
 
-  function stadiumBlast(offset = 0, duration = 1.5, pitch = 1) {
-    scheduleTone(180 * pitch, offset, duration, 0.14, 'sine');
-    scheduleTone(360 * pitch, offset, duration, 0.2, 'sawtooth');
-    scheduleTone(720 * pitch, offset, duration, 0.12, 'square');
-    scheduleTone(1080 * pitch, offset, duration, 0.04, 'triangle');
+  function stadiumBlast(offset = 0, duration = 1, pitch = 1) {
+    scheduleTone(140 * pitch, offset, duration, 0.2, 'sine');
+    scheduleTone(280 * pitch, offset, duration, 0.18, 'triangle');
+    scheduleTone(420 * pitch, offset, duration, 0.16, 'sawtooth');
+    scheduleTone(560 * pitch, offset, duration, 0.1, 'square');
   }
 
   function beep(kind = 'tick') {
@@ -338,18 +338,18 @@
       [0, 0.18, 0.36].forEach((offset) => scheduleTone(1320, offset, 0.13, 0.12, 'square'));
       return 490;
     } else if (kind === 'rest') {
-      stadiumBlast(0, 1.5, 0.86);
-      return 1500;
+      stadiumBlast(0, 1, 0.86);
+      return 1000;
     } else if (kind === 'round') {
-      stadiumBlast(0, 1.5, 1);
-      return 1500;
+      stadiumBlast(0, 1, 1);
+      return 1000;
     } else if (kind === 'finish') {
-      stadiumBlast(0, 0.78, 0.94);
-      stadiumBlast(0.96, 1.15, 1.08);
-      return 2110;
+      stadiumBlast(0, 1, 0.94);
+      stadiumBlast(1.18, 1, 1.08);
+      return 2180;
     } else {
-      stadiumBlast(0, 1.5, 1);
-      return 1500;
+      stadiumBlast(0, 1, 1);
+      return 1000;
     }
   }
 

@@ -44,8 +44,9 @@ test("arena transition buzzers are prominent and never overlap voice guidance", 
   assert.match(appCode, /phase\.type === 'rest' \? 'rest'/);
   assert.match(appCode, /second === 10 && phase\.type === 'rest'/);
   assert.match(appCode, /function stadiumBlast/);
-  assert.match(appCode, /duration = 1\.5/);
-  assert.match(appCode, /return 1500/);
+  assert.match(appCode, /duration = 1/);
+  assert.match(appCode, /scheduleTone\(140 \* pitch/);
+  assert.match(appCode, /return 1000/);
   assert.match(appCode, /gain\.gain\.setValueAtTime\(volume, releaseStart\)/);
   assert.match(appCode, /announceAfterCue\(phaseAnnouncement\(phase\), cueDuration\)/);
   assert.match(appCode, /cueDuration \+ 120/);
