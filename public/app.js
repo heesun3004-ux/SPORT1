@@ -102,6 +102,7 @@
   let audioContext = null;
   let wakeLock = null;
   let lastCueSecond = null;
+  let voiceCueTimer = null;
   let toastTimer = null;
   let recoveryCandidate = null;
 
@@ -318,35 +319,55 @@
     oscillator.stop(start + duration + 0.03);
   }
 
+  function stadiumBlast(offset = 0, duration = 0.9, pitch = 1) {
+    scheduleTone(430 * pitch, offset, duration, 0.18, 'sawtooth');
+    scheduleTone(860 * pitch, offset, duration * 0.92, 0.1, 'square');
+    scheduleTone(1290 * pitch, offset, duration * 0.76, 0.045, 'triangle');
+  }
+
   function beep(kind = 'tick') {
-    if (!activeSession?.cues.sound || !audioContext) return;
+    if (!activeSession?.cues.sound || !audioContext) return 0;
     if (kind === 'tick') {
-      scheduleTone(980, 0, 0.1, 0.1, 'square');
+      scheduleTone(1080, 0, 0.11, 0.11, 'square');
+      return 110;
     } else if (kind === 'warning') {
-      [0, 0.17, 0.34].forEach((offset) => scheduleTone(1180, offset, 0.12, 0.09, 'square'));
+      [0, 0.18, 0.36].forEach((offset) => scheduleTone(1320, offset, 0.13, 0.12, 'square'));
+      return 490;
     } else if (kind === 'rest') {
-      scheduleTone(720, 0, 0.72, 0.13, 'square');
+      stadiumBlast(0, 0.95, 0.82);
+      return 950;
     } else if (kind === 'round') {
-      scheduleTone(1040, 0, 0.82, 0.14, 'square');
+      stadiumBlast(0, 1.05, 1);
+      return 1050;
     } else if (kind === 'finish') {
-      scheduleTone(960, 0, 0.5, 0.13, 'square');
-      scheduleTone(960, 0.66, 0.5, 0.13, 'square');
-      scheduleTone(1160, 1.32, 0.9, 0.14, 'square');
+      stadiumBlast(0, 0.78, 0.94);
+      stadiumBlast(0.96, 1.15, 1.08);
+      return 2110;
     } else {
-      scheduleTone(1040, 0, 0.7, 0.14, 'square');
+      stadiumBlast(0, 0.9, 1);
+      return 900;
     }
   }
 
-  function speak(text) {
-    if (!activeSession?.cues.voice || !('speechSynthesis' in window)) return;
+  function speak(text, enabled = activeSession?.cues.voice) {
+    if (!enabled || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ko-KR';
-    utterance.rate = 1.36;
+    utterance.rate = 1.26;
     utterance.pitch = 1;
     const koreanVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith('ko'));
     if (koreanVoice) utterance.voice = koreanVoice;
     window.speechSynthesis.speak(utterance);
+  }
+
+  function announceAfterCue(text, cueDuration = 0) {
+    clearTimeout(voiceCueTimer);
+    const voiceEnabled = Boolean(activeSession?.cues.voice);
+    voiceCueTimer = setTimeout(() => {
+      speak(text, voiceEnabled);
+      voiceCueTimer = null;
+    }, cueDuration + 120);
   }
 
   function vibrate(pattern) {
@@ -419,9 +440,10 @@
     lastCueSecond = null;
 
     if (activeSession.status === 'running') {
-      beep(phase.type === 'rest' ? 'rest' : phase.type === 'prep' ? 'start' : 'round');
+      clearTimeout(voiceCueTimer);
+      const cueDuration = beep(phase.type === 'rest' ? 'rest' : phase.type === 'prep' ? 'start' : 'round');
       vibrate([80]);
-      speak(phaseAnnouncement(phase));
+      announceAfterCue(phaseAnnouncement(phase), cueDuration);
     }
 
     renderTimer();
@@ -539,9 +561,9 @@
     if (second === lastCueSecond) return;
     lastCueSecond = second;
     if (second === 10 && phase.type === 'rest') {
-      beep('warning');
+      const cueDuration = beep('warning');
       vibrate([45, 70, 45, 70, 45]);
-      speak('10초 후 시작합니다. 준비하세요.');
+      announceAfterCue('10초 후 시작합니다. 준비하세요.', cueDuration);
     }
     if ([3, 2, 1].includes(second)) {
       beep('tick');
@@ -582,6 +604,8 @@
     if (!activeSession) return;
     const phase = currentPhase();
     if (activeSession.status === 'running') {
+      clearTimeout(voiceCueTimer);
+      voiceCueTimer = null;
       activeSession.pausedRemainingMs = phase.durationMs ? currentPhaseRemaining() : null;
       activeSession.pausedElapsedMs = currentPhaseElapsed();
       activeSession.pausedAtEpoch = Date.now();
@@ -690,7 +714,7 @@
   function completeSession() {
     if (!activeSession) return;
     const elapsedMs = totalSessionElapsed();
-    beep('finish');
+    const cueDuration = beep('finish');
     vibrate([100, 80, 100, 80, 180]);
 
     const result = {
@@ -704,7 +728,7 @@
     saveHistory(result);
     clearPersistedSession();
     closeTimerScreen();
-    speak('운동이 종료되었습니다. 수고하셨습니다.');
+    announceAfterCue('운동이 종료되었습니다. 수고하셨습니다.', cueDuration);
 
     refs.resultTime.textContent = formatElapsed(elapsedMs);
     refs.splitList.innerHTML = activeSession.splits.length
@@ -718,6 +742,8 @@
   function abortSession() {
     if (!activeSession) return;
     if (!window.confirm('현재 세션을 종료할까요? 진행 기록은 저장되지 않습니다.')) return;
+    clearTimeout(voiceCueTimer);
+    voiceCueTimer = null;
     clearPersistedSession();
     closeTimerScreen();
     activeSession = null;

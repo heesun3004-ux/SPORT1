@@ -37,14 +37,16 @@ test("HYROX disables hidden standard inputs so native form validation cannot blo
   assert.match(appCode, /division\.disabled = !isHyrox/);
 });
 
-test("electronic transition beeps distinguish work, rest, warning, and finish", () => {
+test("arena transition buzzers are prominent and never overlap voice guidance", () => {
   for (const cue of ["warning", "rest", "round", "finish"]) {
     assert.match(appCode, new RegExp(`kind === '${cue}'`));
   }
   assert.match(appCode, /phase\.type === 'rest' \? 'rest'/);
   assert.match(appCode, /second === 10 && phase\.type === 'rest'/);
-  assert.doesNotMatch(appCode, /ringBell/);
-  assert.match(appCode, /utterance\.rate = 1\.36/);
+  assert.match(appCode, /function stadiumBlast/);
+  assert.match(appCode, /announceAfterCue\(phaseAnnouncement\(phase\), cueDuration\)/);
+  assert.match(appCode, /cueDuration \+ 120/);
+  assert.match(appCode, /utterance\.rate = 1\.26/);
   assert.match(markup, /경기장 신호음/);
 });
 
