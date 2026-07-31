@@ -7,21 +7,21 @@ export const paceforgeMarkup = String.raw`
       <span>PACEFORGE</span>
     </a>
     <nav class="nav-links" aria-label="주요 메뉴">
-      <a href="#modes">모드</a>
       <a href="#program">커스텀</a>
+      <a href="#modes">모드</a>
       <a href="#studio">타이머</a>
       <a href="#history">기록</a>
     </nav>
     <a class="nav-cta" href="#studio">타이머 시작 <span aria-hidden="true">↗</span></a>
   </header>
 
-  <nav class="mobile-category-nav" aria-label="모바일 주요 카테고리">
-    <button type="button" data-mobile-category="home" aria-selected="true">홈</button>
-    <button type="button" data-mobile-category="modes" aria-selected="false">모드</button>
-    <button type="button" data-mobile-category="program" aria-selected="false">커스텀</button>
-    <button type="button" data-mobile-category="timer" aria-selected="false">타이머</button>
-    <button type="button" data-mobile-category="features" aria-selected="false">기능</button>
-    <button type="button" data-mobile-category="history" aria-selected="false">기록</button>
+  <nav class="mobile-category-nav" aria-label="모바일 주요 카테고리" role="tablist">
+    <a href="#top" data-mobile-category="home" role="tab" aria-selected="true" aria-controls="top">홈</a>
+    <a href="#program" data-mobile-category="program" role="tab" aria-selected="false" aria-controls="program">커스텀</a>
+    <a href="#modes" data-mobile-category="modes" role="tab" aria-selected="false" aria-controls="modes">모드</a>
+    <a href="#studio" data-mobile-category="timer" role="tab" aria-selected="false" aria-controls="studio">타이머</a>
+    <a href="#features" data-mobile-category="features" role="tab" aria-selected="false" aria-controls="features">기능</a>
+    <a href="#history" data-mobile-category="history" role="tab" aria-selected="false" aria-controls="history">기록</a>
   </nav>
 
   <main>
@@ -59,37 +59,6 @@ export const paceforgeMarkup = String.raw`
       <span>04</span><strong>REPEAT</strong>
     </section>
 
-    <section class="section modes-section" id="modes" aria-labelledby="modes-title" data-mobile-panel="modes">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow"><span></span> 운동 모드</p>
-          <h2 id="modes-title">원하는 운동을<br>바로 시작하세요.</h2>
-        </div>
-        <p>인터벌부터 HYROX까지 운동 방식에 맞는 타이머를 선택하세요.</p>
-      </div>
-
-      <div class="mode-grid">
-        <article class="mode-card mode-card-featured">
-          <div class="mode-card-top"><span>01</span><span class="mode-tag">QUICK START</span></div>
-          <h3>INTERVAL</h3>
-          <p>운동 시간, 휴식 시간, 세트 수를 직접 설정합니다.</p>
-          <button type="button" data-quick-mode="interval">인터벌 설정 <span>→</span></button>
-        </article>
-        <article class="mode-card">
-          <div class="mode-card-top"><span>02</span><span class="mode-tag">CROSSFIT</span></div>
-          <h3>WOD CLOCK</h3>
-          <p>AMRAP, EMOM, 타바타, 포타임을 선택해 시작합니다.</p>
-          <button type="button" data-quick-mode="amrap">WOD 타이머 선택 <span>→</span></button>
-        </article>
-        <article class="mode-card mode-card-orange">
-          <div class="mode-card-top"><span>03</span><span class="mode-tag">FITNESS RACE</span></div>
-          <h3>HYROX 8</h3>
-          <p>러닝과 8개 스테이션의 구간 기록을 차례로 저장합니다.</p>
-          <button type="button" data-quick-mode="hyrox">HYROX 불러오기 <span>→</span></button>
-        </article>
-      </div>
-    </section>
-
     <section class="section program-section" id="program" aria-labelledby="program-title" data-mobile-panel="program">
       <div class="section-heading program-heading">
         <div>
@@ -120,6 +89,37 @@ export const paceforgeMarkup = String.raw`
         </button>
         <p class="form-note">신호음과 음성 설정은 타이머 카테고리의 설정을 함께 사용합니다.</p>
       </form>
+    </section>
+
+    <section class="section modes-section" id="modes" aria-labelledby="modes-title" data-mobile-panel="modes">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow"><span></span> 운동 모드</p>
+          <h2 id="modes-title">원하는 운동을<br>바로 시작하세요.</h2>
+        </div>
+        <p>인터벌부터 HYROX까지 운동 방식에 맞는 타이머를 선택하세요.</p>
+      </div>
+
+      <div class="mode-grid">
+        <article class="mode-card mode-card-featured">
+          <div class="mode-card-top"><span>01</span><span class="mode-tag">QUICK START</span></div>
+          <h3>INTERVAL</h3>
+          <p>운동 시간, 휴식 시간, 세트 수를 직접 설정합니다.</p>
+          <button type="button" data-quick-mode="interval">인터벌 설정 <span>→</span></button>
+        </article>
+        <article class="mode-card">
+          <div class="mode-card-top"><span>02</span><span class="mode-tag">CROSSFIT</span></div>
+          <h3>WOD CLOCK</h3>
+          <p>AMRAP, EMOM, 타바타, 포타임을 선택해 시작합니다.</p>
+          <button type="button" data-quick-mode="amrap">WOD 타이머 선택 <span>→</span></button>
+        </article>
+        <article class="mode-card mode-card-orange">
+          <div class="mode-card-top"><span>03</span><span class="mode-tag">FITNESS RACE</span></div>
+          <h3>HYROX 8</h3>
+          <p>러닝과 8개 스테이션의 구간 기록을 차례로 저장합니다.</p>
+          <button type="button" data-quick-mode="hyrox">HYROX 불러오기 <span>→</span></button>
+        </article>
+      </div>
     </section>
 
     <section class="section studio-section" id="studio" aria-labelledby="studio-title" data-mobile-panel="timer">
@@ -189,7 +189,7 @@ export const paceforgeMarkup = String.raw`
       </div>
     </section>
 
-    <section class="section reliability-section" aria-labelledby="reliability-title" data-mobile-panel="features">
+    <section class="section reliability-section" id="features" aria-labelledby="reliability-title" data-mobile-panel="features">
       <div class="reliability-copy">
         <p class="eyebrow"><span></span> 자동 안내 기능</p>
         <h2 id="reliability-title">화면을 보지 않아도<br>흐름을 놓치지 않아요.</h2>

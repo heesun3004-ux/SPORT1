@@ -114,7 +114,15 @@
   let toastTimer = null;
   let recoveryCandidate = null;
 
-  const MOBILE_VIEWS = new Set(['home', 'modes', 'program', 'timer', 'features', 'history']);
+  const MOBILE_VIEWS = new Set(['home', 'program', 'modes', 'timer', 'features', 'history']);
+  const HASH_TO_VIEW = {
+    '#top': 'home',
+    '#program': 'program',
+    '#modes': 'modes',
+    '#studio': 'timer',
+    '#features': 'features',
+    '#history': 'history',
+  };
 
   function setMobileView(view, shouldScroll = true) {
     const nextView = MOBILE_VIEWS.has(view) ? view : 'home';
@@ -123,7 +131,11 @@
       const active = button.dataset.mobileCategory === nextView;
       button.classList.toggle('active', active);
       button.setAttribute('aria-selected', String(active));
+      if (active) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
     });
+    if (nextView === 'program' && refs.customList && !refs.customList.children.length) initializeCustomProgram();
+    if (nextView === 'program' && refs.customList?.children.length) updateCustomProgram();
     if (shouldScroll && window.matchMedia('(max-width: 980px)').matches) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1022,12 +1034,18 @@
   }
 
   function registerEvents() {
-    $$('[data-mobile-category]').forEach((button) => button.addEventListener('click', () => setMobileView(button.dataset.mobileCategory)));
-    $$('a[href="#top"]').forEach((link) => link.addEventListener('click', () => setMobileView('home')));
-    $$('a[href="#modes"]').forEach((link) => link.addEventListener('click', () => setMobileView('modes')));
-    $$('a[href="#program"]').forEach((link) => link.addEventListener('click', () => setMobileView('program')));
-    $$('a[href="#studio"]').forEach((link) => link.addEventListener('click', () => setMobileView('timer')));
-    $$('a[href="#history"]').forEach((link) => link.addEventListener('click', () => setMobileView('history')));
+    $$('[data-mobile-category]').forEach((link) => link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const view = link.dataset.mobileCategory;
+      const hash = link.getAttribute('href');
+      if (hash && location.hash !== hash) history.pushState(null, '', hash);
+      setMobileView(view);
+    }));
+    $$('a[href="#top"]:not([data-mobile-category])').forEach((link) => link.addEventListener('click', () => setMobileView('home')));
+    $$('a[href="#modes"]:not([data-mobile-category])').forEach((link) => link.addEventListener('click', () => setMobileView('modes')));
+    $$('a[href="#program"]:not([data-mobile-category])').forEach((link) => link.addEventListener('click', () => setMobileView('program')));
+    $$('a[href="#studio"]:not([data-mobile-category])').forEach((link) => link.addEventListener('click', () => setMobileView('timer')));
+    $$('a[href="#history"]:not([data-mobile-category])').forEach((link) => link.addEventListener('click', () => setMobileView('history')));
     refs.tabs.forEach((tab) => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
     $$('[data-quick-mode]').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.quickMode, true)));
     [refs.prep, refs.work, refs.rest, refs.rounds, refs.name].forEach((input) => input.addEventListener('input', updatePreview));
@@ -1110,12 +1128,13 @@
     });
 
     window.addEventListener('beforeunload', persistActiveSession);
+    window.addEventListener('popstate', () => setMobileView(HASH_TO_VIEW[location.hash] || 'home', false));
   }
 
   function initialize() {
-    setMobileView('home', false);
     setMode('interval');
     initializeCustomProgram();
+    setMobileView(HASH_TO_VIEW[location.hash] || 'home', false);
     renderHistory();
     registerEvents();
     checkRecovery();

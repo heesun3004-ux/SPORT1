@@ -85,6 +85,14 @@ test("mobile layout is divided into accessible top-level categories", () => {
   const styles = fs.readFileSync(path.join(root, "app/globals.css"), "utf8");
   assert.match(styles, /\.mobile-category-nav/);
   assert.match(styles, /body\[data-mobile-view="timer"\]/);
+  assert.match(
+    markup,
+    /data-mobile-category="home"[\s\S]*data-mobile-category="program"[\s\S]*data-mobile-category="modes"/,
+  );
+  assert.match(markup, /href="#program" data-mobile-category="program"/);
+  assert.match(appCode, /HASH_TO_VIEW/);
+  assert.match(appCode, /history\.pushState\(null, '', hash\)/);
+  assert.match(appCode, /window\.addEventListener\('popstate'/);
 });
 
 test("custom programs can be composed, saved, and run through the timer engine", () => {
@@ -98,6 +106,15 @@ test("custom programs can be composed, saved, and run through the timer engine",
   assert.match(appCode, /nextExercise:/);
   assert.match(appCode, /startCustomProgram\(readCustomProgram\(\)\)/);
   assert.match(appCode, /activeSession\.mode === 'custom'/);
+  assert.match(appCode, /nextView === 'program'.*initializeCustomProgram\(\)/s);
+});
+
+test("the service worker refreshes the custom navigation release", () => {
+  const worker = fs.readFileSync(path.join(root, "public/sw.js"), "utf8");
+  assert.match(worker, /paceforge-v3/);
+  assert.doesNotMatch(worker, /\/index\.html/);
+  assert.doesNotMatch(worker, /\/styles\.css/);
+  assert.match(page, /app\.js\?v=20260731-custom-nav/);
 });
 
 test("section copy is concise, functional, and readable on mobile", () => {
