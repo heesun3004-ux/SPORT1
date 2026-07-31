@@ -66,9 +66,23 @@ test("three-second countdown tones use the audio clock at exact one-second inter
 test("metadata and health route are provided by Next.js", () => {
   assert.match(layout, /export const metadata/);
   assert.match(layout, /export const viewport/);
+  assert.match(layout, /metadataBase: new URL\("https:\/\/sport1-six\.vercel\.app"\)/);
+  assert.match(layout, /url: "\/og\.png"/);
   const sitesBuild = fs.readFileSync(
     path.join(root, "scripts/build-sites.js"),
     "utf8",
   );
   assert.match(sitesBuild, /url\.pathname === "\/health"/);
+});
+
+test("mobile layout is divided into accessible top-level categories", () => {
+  for (const category of ["home", "modes", "timer", "features", "history"]) {
+    assert.match(markup, new RegExp(`data-mobile-category="${category}"`));
+    assert.match(markup, new RegExp(`data-mobile-panel="${category}"`));
+  }
+  assert.match(appCode, /function setMobileView/);
+  assert.match(appCode, /window\.matchMedia\('\(max-width: 980px\)'\)/);
+  const styles = fs.readFileSync(path.join(root, "app/globals.css"), "utf8");
+  assert.match(styles, /\.mobile-category-nav/);
+  assert.match(styles, /body\[data-mobile-view="timer"\]/);
 });

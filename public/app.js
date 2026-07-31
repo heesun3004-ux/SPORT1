@@ -107,6 +107,21 @@
   let toastTimer = null;
   let recoveryCandidate = null;
 
+  const MOBILE_VIEWS = new Set(['home', 'modes', 'timer', 'features', 'history']);
+
+  function setMobileView(view, shouldScroll = true) {
+    const nextView = MOBILE_VIEWS.has(view) ? view : 'home';
+    document.body.dataset.mobileView = nextView;
+    $$('[data-mobile-category]').forEach((button) => {
+      const active = button.dataset.mobileCategory === nextView;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', String(active));
+    });
+    if (shouldScroll && window.matchMedia('(max-width: 980px)').matches) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
   function clampNumber(input, fallback, min, max) {
     const value = Number(input);
     if (!Number.isFinite(value)) return fallback;
@@ -183,6 +198,7 @@
     updatePreview();
 
     if (shouldScroll) {
+      setMobileView('timer');
       $('#studio').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
@@ -830,6 +846,11 @@
   }
 
   function registerEvents() {
+    $$('[data-mobile-category]').forEach((button) => button.addEventListener('click', () => setMobileView(button.dataset.mobileCategory)));
+    $$('a[href="#top"]').forEach((link) => link.addEventListener('click', () => setMobileView('home')));
+    $$('a[href="#modes"]').forEach((link) => link.addEventListener('click', () => setMobileView('modes')));
+    $$('a[href="#studio"]').forEach((link) => link.addEventListener('click', () => setMobileView('timer')));
+    $$('a[href="#history"]').forEach((link) => link.addEventListener('click', () => setMobileView('history')));
     refs.tabs.forEach((tab) => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
     $$('[data-quick-mode]').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.quickMode, true)));
     [refs.prep, refs.work, refs.rest, refs.rounds, refs.name].forEach((input) => input.addEventListener('input', updatePreview));
@@ -854,6 +875,7 @@
     refs.closeResult.addEventListener('click', () => {
       refs.resultScreen.hidden = true;
       document.body.style.overflow = '';
+      setMobileView('history', false);
       $('#history').scrollIntoView({ behavior: 'smooth' });
     });
 
@@ -895,6 +917,7 @@
   }
 
   function initialize() {
+    setMobileView('home', false);
     setMode('interval');
     renderHistory();
     registerEvents();

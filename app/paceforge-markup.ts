@@ -14,8 +14,16 @@ export const paceforgeMarkup = String.raw`
     <a class="nav-cta" href="#studio">START TRAINING <span aria-hidden="true">↗</span></a>
   </header>
 
+  <nav class="mobile-category-nav" aria-label="모바일 주요 카테고리">
+    <button type="button" data-mobile-category="home" aria-selected="true">홈</button>
+    <button type="button" data-mobile-category="modes" aria-selected="false">모드</button>
+    <button type="button" data-mobile-category="timer" aria-selected="false">타이머</button>
+    <button type="button" data-mobile-category="features" aria-selected="false">기능</button>
+    <button type="button" data-mobile-category="history" aria-selected="false">기록</button>
+  </nav>
+
   <main>
-    <section class="hero" aria-labelledby="hero-title">
+    <section class="hero" aria-labelledby="hero-title" data-mobile-panel="home">
       <div class="hero-copy">
         <p class="eyebrow"><span></span> HYBRID PERFORMANCE TIMER</p>
         <h1 id="hero-title">전환을 지배하면<br><em>기록이 달라진다.</em></h1>
@@ -42,14 +50,14 @@ export const paceforgeMarkup = String.raw`
       </div>
     </section>
 
-    <section class="signal-strip" aria-label="타이머 진행 예시">
+    <section class="signal-strip" aria-label="타이머 진행 예시" data-mobile-panel="home">
       <span>01</span><strong>WORK · 01:00</strong><i></i>
       <span>02</span><strong>REST · 00:30</strong><i></i>
       <span>03</span><strong>“2세트 시작”</strong><i></i>
       <span>04</span><strong>REPEAT</strong>
     </section>
 
-    <section class="section modes-section" id="modes" aria-labelledby="modes-title">
+    <section class="section modes-section" id="modes" aria-labelledby="modes-title" data-mobile-panel="modes">
       <div class="section-heading">
         <div>
           <p class="eyebrow"><span></span> BUILT AROUND THE SPORT</p>
@@ -80,7 +88,7 @@ export const paceforgeMarkup = String.raw`
       </div>
     </section>
 
-    <section class="section studio-section" id="studio" aria-labelledby="studio-title">
+    <section class="section studio-section" id="studio" aria-labelledby="studio-title" data-mobile-panel="timer">
       <div class="studio-heading">
         <div>
           <p class="eyebrow eyebrow-dark"><span></span> SESSION BUILDER</p>
@@ -147,7 +155,7 @@ export const paceforgeMarkup = String.raw`
       </div>
     </section>
 
-    <section class="section reliability-section" aria-labelledby="reliability-title">
+    <section class="section reliability-section" aria-labelledby="reliability-title" data-mobile-panel="features">
       <div class="reliability-copy">
         <p class="eyebrow"><span></span> ENGINEERED FOR THE FLOOR</p>
         <h2 id="reliability-title">운동 중에는<br>타이머를 의심하지 마세요.</h2>
@@ -161,13 +169,13 @@ export const paceforgeMarkup = String.raw`
       </div>
     </section>
 
-    <section class="section history-section" id="history" aria-labelledby="history-title">
+    <section class="section history-section" id="history" aria-labelledby="history-title" data-mobile-panel="history">
       <div class="history-heading"><div><p class="eyebrow eyebrow-dark"><span></span> LOCAL HISTORY</p><h2 id="history-title">마친 세션은<br>기록으로 남습니다.</h2></div><button id="clearHistory" class="text-button" type="button">기록 지우기</button></div>
       <div class="history-list" id="historyList"></div>
     </section>
   </main>
 
-  <footer class="site-footer">
+  <footer class="site-footer" data-mobile-panel="home">
     <a class="brand" href="#top"><span class="brand-mark">PF</span><span>PACEFORGE</span></a>
     <p>TRAIN THE TRANSITION.<br>OWN THE NEXT REP.</p>
     <small>본 서비스는 CrossFit, LLC 또는 HYROX World GmbH와 공식 제휴된 서비스가 아닙니다. 공식 경기 전에는 최신 규정을 확인하세요.</small>
