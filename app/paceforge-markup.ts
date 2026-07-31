@@ -8,6 +8,7 @@ export const paceforgeMarkup = String.raw`
     </a>
     <nav class="nav-links" aria-label="주요 메뉴">
       <a href="#modes">모드</a>
+      <a href="#program">커스텀</a>
       <a href="#studio">타이머</a>
       <a href="#history">기록</a>
     </nav>
@@ -17,6 +18,7 @@ export const paceforgeMarkup = String.raw`
   <nav class="mobile-category-nav" aria-label="모바일 주요 카테고리">
     <button type="button" data-mobile-category="home" aria-selected="true">홈</button>
     <button type="button" data-mobile-category="modes" aria-selected="false">모드</button>
+    <button type="button" data-mobile-category="program" aria-selected="false">커스텀</button>
     <button type="button" data-mobile-category="timer" aria-selected="false">타이머</button>
     <button type="button" data-mobile-category="features" aria-selected="false">기능</button>
     <button type="button" data-mobile-category="history" aria-selected="false">기록</button>
@@ -86,6 +88,38 @@ export const paceforgeMarkup = String.raw`
           <button type="button" data-quick-mode="hyrox">HYROX 불러오기 <span>→</span></button>
         </article>
       </div>
+    </section>
+
+    <section class="section program-section" id="program" aria-labelledby="program-title" data-mobile-panel="program">
+      <div class="section-heading program-heading">
+        <div>
+          <p class="eyebrow"><span></span> 커스텀 프로그램</p>
+          <h2 id="program-title">내 운동 순서를<br>직접 만드세요.</h2>
+        </div>
+        <p>운동, 시간, 휴식, 세트 수를 순서대로 담으면 바로 실행됩니다.</p>
+      </div>
+
+      <form class="custom-program" id="customProgramForm">
+        <div class="custom-program-top">
+          <label class="custom-title-field"><span>프로그램 이름</span><input id="customProgramName" type="text" maxlength="40" value="나의 프로그램" autocomplete="off" required></label>
+          <label class="custom-prep-field"><span>준비 시간</span><div><input id="customPrepTime" type="number" min="0" max="300" value="10" inputmode="numeric" required><b>초</b></div></label>
+        </div>
+
+        <div class="custom-block-header" aria-hidden="true">
+          <span>운동</span><span>운동</span><span>휴식</span><span>세트</span><span></span>
+        </div>
+        <div class="custom-block-list" id="customBlockList"></div>
+
+        <div class="custom-program-actions">
+          <button class="add-custom-block" id="addCustomBlock" type="button"><span aria-hidden="true">＋</span> 운동 추가</button>
+          <p id="customProgramSummary" aria-live="polite">운동 0개 · 0세트 · 00:00</p>
+        </div>
+
+        <button class="start-session custom-start" type="submit">
+          <span>커스텀 운동 시작</span><b aria-hidden="true">→</b>
+        </button>
+        <p class="form-note">신호음과 음성 설정은 타이머 카테고리의 설정을 함께 사용합니다.</p>
+      </form>
     </section>
 
     <section class="section studio-section" id="studio" aria-labelledby="studio-title" data-mobile-panel="timer">

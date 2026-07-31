@@ -76,7 +76,7 @@ test("metadata and health route are provided by Next.js", () => {
 });
 
 test("mobile layout is divided into accessible top-level categories", () => {
-  for (const category of ["home", "modes", "timer", "features", "history"]) {
+  for (const category of ["home", "modes", "program", "timer", "features", "history"]) {
     assert.match(markup, new RegExp(`data-mobile-category="${category}"`));
     assert.match(markup, new RegExp(`data-mobile-panel="${category}"`));
   }
@@ -87,10 +87,24 @@ test("mobile layout is divided into accessible top-level categories", () => {
   assert.match(styles, /body\[data-mobile-view="timer"\]/);
 });
 
+test("custom programs can be composed, saved, and run through the timer engine", () => {
+  assert.match(markup, /id="customProgramForm"/);
+  assert.match(markup, /id="customBlockList"/);
+  assert.match(markup, /id="addCustomBlock"/);
+  assert.match(appCode, /paceforge\.custom-program\.v1/);
+  assert.match(appCode, /function buildCustomProgramSession/);
+  assert.match(appCode, /function calculateCustomTotal/);
+  assert.match(appCode, /customSet: set/);
+  assert.match(appCode, /nextExercise:/);
+  assert.match(appCode, /startCustomProgram\(readCustomProgram\(\)\)/);
+  assert.match(appCode, /activeSession\.mode === 'custom'/);
+});
+
 test("section copy is concise, functional, and readable on mobile", () => {
   for (const copy of [
     "시간은 맡기고",
     "원하는 운동을",
+    "내 운동 순서를",
     "시간만 정하면",
     "화면을 보지 않아도",
     "완료한 운동을",

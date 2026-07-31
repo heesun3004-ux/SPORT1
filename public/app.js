@@ -7,6 +7,7 @@
   const STORAGE_KEYS = {
     active: 'paceforge.active-session.v1',
     history: 'paceforge.history.v1',
+    custom: 'paceforge.custom-program.v1',
   };
 
   const MODE_CONFIG = {
@@ -93,6 +94,12 @@
     resumeRecovery: $('#resumeRecovery'),
     discardRecovery: $('#discardRecovery'),
     toast: $('#toast'),
+    customForm: $('#customProgramForm'),
+    customName: $('#customProgramName'),
+    customPrep: $('#customPrepTime'),
+    customList: $('#customBlockList'),
+    customSummary: $('#customProgramSummary'),
+    addCustomBlock: $('#addCustomBlock'),
   };
 
   let selectedMode = 'interval';
@@ -107,7 +114,7 @@
   let toastTimer = null;
   let recoveryCandidate = null;
 
-  const MOBILE_VIEWS = new Set(['home', 'modes', 'timer', 'features', 'history']);
+  const MOBILE_VIEWS = new Set(['home', 'modes', 'program', 'timer', 'features', 'history']);
 
   function setMobileView(view, shouldScroll = true) {
     const nextView = MOBILE_VIEWS.has(view) ? view : 'home';
@@ -220,6 +227,96 @@
     };
   }
 
+  function customBlockMarkup(block = {}) {
+    const name = escapeHtml(block.name || '새 운동');
+    const work = clampNumber(block.work, 40, 5, 7200);
+    const rest = clampNumber(block.rest, 20, 0, 3600);
+    const sets = clampNumber(block.sets, 3, 1, 100);
+    return `<div class="custom-block">
+      <label class="custom-field"><span>운동 이름</span><input class="custom-exercise-name" type="text" maxlength="40" value="${name}" autocomplete="off" required></label>
+      <label class="custom-field"><span>운동 시간</span><div><input class="custom-work" type="number" min="5" max="7200" value="${work}" inputmode="numeric" required><b>초</b></div></label>
+      <label class="custom-field"><span>휴식 시간</span><div><input class="custom-rest" type="number" min="0" max="3600" value="${rest}" inputmode="numeric" required><b>초</b></div></label>
+      <label class="custom-field"><span>세트 수</span><div><input class="custom-sets" type="number" min="1" max="100" value="${sets}" inputmode="numeric" required><b>SET</b></div></label>
+      <button class="remove-custom-block" type="button" aria-label="운동 삭제">×</button>
+    </div>`;
+  }
+
+  function addCustomProgramBlock(block = {}) {
+    if ($$('.custom-block', refs.customList).length >= 12) {
+      announceToast('운동은 최대 12개까지 추가할 수 있습니다.');
+      return;
+    }
+    refs.customList.insertAdjacentHTML('beforeend', customBlockMarkup(block));
+    updateCustomProgram();
+  }
+
+  function readCustomProgram() {
+    const blocks = $$('.custom-block', refs.customList).map((row, index) => ({
+      name: $('.custom-exercise-name', row).value.trim() || `운동 ${index + 1}`,
+      work: clampNumber($('.custom-work', row).value, 40, 5, 7200),
+      rest: clampNumber($('.custom-rest', row).value, 20, 0, 3600),
+      sets: clampNumber($('.custom-sets', row).value, 3, 1, 100),
+    }));
+    return {
+      mode: 'custom',
+      name: refs.customName.value.trim() || '나의 프로그램',
+      prep: clampNumber(refs.customPrep.value, 10, 0, 300),
+      blocks,
+      cues: {
+        sound: refs.sound.checked,
+        voice: refs.voice.checked,
+        vibration: refs.vibration.checked,
+      },
+    };
+  }
+
+  function calculateCustomTotal(settings) {
+    const totalSets = settings.blocks.reduce((total, block) => total + block.sets, 0);
+    let completedSets = 0;
+    let seconds = settings.prep;
+    settings.blocks.forEach((block) => {
+      for (let set = 1; set <= block.sets; set += 1) {
+        completedSets += 1;
+        seconds += block.work;
+        if (completedSets < totalSets) seconds += block.rest;
+      }
+    });
+    return { totalSets, durationMs: seconds * 1000 };
+  }
+
+  function saveCustomDraft(settings) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.custom, JSON.stringify({
+        name: settings.name,
+        prep: settings.prep,
+        blocks: settings.blocks,
+      }));
+    } catch (_) { /* storage may be blocked */ }
+  }
+
+  function updateCustomProgram() {
+    const settings = readCustomProgram();
+    const totals = calculateCustomTotal(settings);
+    refs.customSummary.textContent = `운동 ${settings.blocks.length}개 · ${totals.totalSets}세트 · ${formatTime(totals.durationMs)}`;
+    saveCustomDraft(settings);
+  }
+
+  function initializeCustomProgram() {
+    let draft = null;
+    try { draft = JSON.parse(localStorage.getItem(STORAGE_KEYS.custom) || 'null'); } catch (_) { /* use defaults */ }
+    const blocks = Array.isArray(draft?.blocks) && draft.blocks.length
+      ? draft.blocks.slice(0, 12)
+      : [
+        { name: '버피', work: 40, rest: 20, sets: 3 },
+        { name: '에어 스쿼트', work: 45, rest: 15, sets: 3 },
+      ];
+    refs.customName.value = typeof draft?.name === 'string' ? draft.name.slice(0, 40) : '나의 프로그램';
+    refs.customPrep.value = clampNumber(draft?.prep, 10, 0, 300);
+    refs.customList.innerHTML = '';
+    blocks.forEach((block) => refs.customList.insertAdjacentHTML('beforeend', customBlockMarkup(block)));
+    updateCustomProgram();
+  }
+
   function calculateTotal(settings) {
     if (settings.mode === 'hyrox' || settings.mode === 'fortime') return null;
     if (settings.mode === 'amrap') return (settings.prep + settings.work) * 1000;
@@ -304,6 +401,50 @@
     return {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       ...settings,
+      phases,
+      phaseIndex: 0,
+      status: 'running',
+      startedAtEpoch: Date.now(),
+      totalPausedMs: 0,
+      pausedAtEpoch: null,
+      splits: [],
+    };
+  }
+
+  function buildCustomProgramSession(settings) {
+    const phases = [];
+    const totalSets = settings.blocks.reduce((total, block) => total + block.sets, 0);
+    let round = 0;
+    if (settings.prep > 0) phases.push({ type: 'prep', label: 'GET READY', durationMs: settings.prep * 1000, round: 0 });
+
+    settings.blocks.forEach((block, blockIndex) => {
+      for (let set = 1; set <= block.sets; set += 1) {
+        round += 1;
+        phases.push({
+          type: 'work',
+          label: block.name,
+          durationMs: block.work * 1000,
+          round,
+          customSet: set,
+          customSets: block.sets,
+        });
+        if (round < totalSets && block.rest > 0) {
+          const nextBlock = set < block.sets ? block : settings.blocks[blockIndex + 1];
+          phases.push({
+            type: 'rest',
+            label: 'REST',
+            durationMs: block.rest * 1000,
+            round,
+            nextExercise: nextBlock?.name || '',
+          });
+        }
+      }
+    });
+
+    return {
+      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      ...settings,
+      rounds: totalSets,
       phases,
       phaseIndex: 0,
       status: 'running',
@@ -420,7 +561,8 @@
 
   function phaseAnnouncement(phase) {
     if (phase.type === 'prep') return '운동을 시작합니다. 준비하세요.';
-    if (phase.type === 'rest') return `${activeSession.rest}초 휴식입니다.`;
+    if (phase.type === 'rest') return `${Math.round(phase.durationMs / 1000)}초 휴식입니다.`;
+    if (activeSession.mode === 'custom') return `${phase.label}, ${phase.customSet}세트 시작입니다.`;
     if (activeSession.mode === 'emom') return `${phase.round}분 시작입니다.`;
     if (activeSession.mode === 'hyrox') return `${phase.label}, ${phase.target} 시작입니다.`;
     if (activeSession.mode === 'fortime') return '포 타임 시작입니다.';
@@ -556,6 +698,9 @@
     if (!activeSession) return '—';
     const next = activeSession.phases[activeSession.phaseIndex + 1];
     if (!next) return 'SESSION COMPLETE';
+    if (activeSession.mode === 'custom' && next.type === 'rest' && next.nextExercise) {
+      return `휴식 ${formatTime(next.durationMs)} · 다음 ${next.nextExercise}`;
+    }
     const suffix = next.durationMs ? formatTime(next.durationMs) : next.target || 'MANUAL';
     return `${next.label} · ${suffix}`;
   }
@@ -577,6 +722,10 @@
 
     if (activeSession.mode === 'hyrox' && phase.type !== 'prep') {
       refs.timerMeta.textContent = `${phase.target} · STAGE ${phase.round} / 16`;
+    } else if (activeSession.mode === 'custom' && phase.type === 'work') {
+      refs.timerMeta.textContent = `${phase.customSet} / ${phase.customSets} SET · 전체 ${phase.round} / ${activeSession.rounds}`;
+    } else if (activeSession.mode === 'custom' && phase.type === 'rest') {
+      refs.timerMeta.textContent = phase.nextExercise ? `다음 운동 · ${phase.nextExercise}` : '다음 운동 준비';
     } else if (activeSession.mode === 'amrap') {
       refs.timerMeta.textContent = 'AS MANY ROUNDS AS POSSIBLE';
     } else if (activeSession.mode === 'fortime') {
@@ -717,7 +866,20 @@
   async function startSessionFromSettings(settings) {
     await unlockAudio();
     activeSession = buildSession(settings);
-    lastSessionConfig = settings;
+    lastSessionConfig = { kind: 'standard', settings };
+    openTimerScreen();
+    startPhase(0);
+  }
+
+  async function startCustomProgram(settings) {
+    if (!settings.blocks.length) {
+      announceToast('운동을 하나 이상 추가해 주세요.');
+      return;
+    }
+    await unlockAudio();
+    saveCustomDraft(settings);
+    activeSession = buildCustomProgramSession(settings);
+    lastSessionConfig = { kind: 'custom', settings };
     openTimerScreen();
     startPhase(0);
   }
@@ -810,16 +972,30 @@
     if (!recoveryCandidate) return;
     await unlockAudio();
     activeSession = recoveryCandidate;
-    lastSessionConfig = {
-      mode: activeSession.mode,
-      prep: activeSession.prep,
-      work: activeSession.work,
-      rest: activeSession.rest,
-      rounds: activeSession.rounds,
-      division: activeSession.division,
-      name: activeSession.name,
-      cues: activeSession.cues,
-    };
+    lastSessionConfig = activeSession.mode === 'custom'
+      ? {
+        kind: 'custom',
+        settings: {
+          mode: 'custom',
+          prep: activeSession.prep,
+          name: activeSession.name,
+          blocks: activeSession.blocks,
+          cues: activeSession.cues,
+        },
+      }
+      : {
+        kind: 'standard',
+        settings: {
+          mode: activeSession.mode,
+          prep: activeSession.prep,
+          work: activeSession.work,
+          rest: activeSession.rest,
+          rounds: activeSession.rounds,
+          division: activeSession.division,
+          name: activeSession.name,
+          cues: activeSession.cues,
+        },
+      };
 
     const timeAway = Math.max(0, Date.now() - (activeSession.savedAtEpoch || Date.now()));
     const wasPaused = activeSession.status === 'paused';
@@ -849,6 +1025,7 @@
     $$('[data-mobile-category]').forEach((button) => button.addEventListener('click', () => setMobileView(button.dataset.mobileCategory)));
     $$('a[href="#top"]').forEach((link) => link.addEventListener('click', () => setMobileView('home')));
     $$('a[href="#modes"]').forEach((link) => link.addEventListener('click', () => setMobileView('modes')));
+    $$('a[href="#program"]').forEach((link) => link.addEventListener('click', () => setMobileView('program')));
     $$('a[href="#studio"]').forEach((link) => link.addEventListener('click', () => setMobileView('timer')));
     $$('a[href="#history"]').forEach((link) => link.addEventListener('click', () => setMobileView('history')));
     refs.tabs.forEach((tab) => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
@@ -859,6 +1036,23 @@
     refs.form.addEventListener('submit', async (event) => {
       event.preventDefault();
       await startSessionFromSettings(readSettings());
+    });
+
+    refs.addCustomBlock.addEventListener('click', () => addCustomProgramBlock());
+    refs.customList.addEventListener('click', (event) => {
+      const removeButton = event.target.closest('.remove-custom-block');
+      if (!removeButton) return;
+      if ($$('.custom-block', refs.customList).length === 1) {
+        announceToast('운동은 하나 이상 필요합니다.');
+        return;
+      }
+      removeButton.closest('.custom-block').remove();
+      updateCustomProgram();
+    });
+    refs.customForm.addEventListener('input', updateCustomProgram);
+    refs.customForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      await startCustomProgram(readCustomProgram());
     });
 
     refs.pause.addEventListener('click', togglePause);
@@ -882,7 +1076,9 @@
     refs.repeatSession.addEventListener('click', async () => {
       refs.resultScreen.hidden = true;
       document.body.style.overflow = '';
-      if (lastSessionConfig) await startSessionFromSettings(lastSessionConfig);
+      if (!lastSessionConfig) return;
+      if (lastSessionConfig.kind === 'custom') await startCustomProgram(lastSessionConfig.settings);
+      else await startSessionFromSettings(lastSessionConfig.settings);
     });
 
     refs.clearHistory.addEventListener('click', () => {
@@ -919,6 +1115,7 @@
   function initialize() {
     setMobileView('home', false);
     setMode('interval');
+    initializeCustomProgram();
     renderHistory();
     registerEvents();
     checkRecovery();
