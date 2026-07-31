@@ -309,10 +309,13 @@
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
     const start = audioContext.currentTime + offset;
+    const attackEnd = start + 0.012;
+    const releaseStart = start + Math.max(0.03, duration - Math.min(0.12, duration * 0.25));
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(frequency, start);
     gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(volume, start + 0.008);
+    gain.gain.exponentialRampToValueAtTime(volume, attackEnd);
+    gain.gain.setValueAtTime(volume, releaseStart);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(gain).connect(audioContext.destination);
     oscillator.start(start);
@@ -320,10 +323,10 @@
   }
 
   function stadiumBlast(offset = 0, duration = 1.5, pitch = 1) {
-    scheduleTone(260 * pitch, offset, duration, 0.22, 'sawtooth');
-    scheduleTone(520 * pitch, offset, duration * 0.98, 0.14, 'square');
-    scheduleTone(780 * pitch, offset, duration * 0.9, 0.07, 'triangle');
-    scheduleTone(1040 * pitch, offset, duration * 0.78, 0.04, 'sine');
+    scheduleTone(180 * pitch, offset, duration, 0.14, 'sine');
+    scheduleTone(360 * pitch, offset, duration, 0.2, 'sawtooth');
+    scheduleTone(720 * pitch, offset, duration, 0.12, 'square');
+    scheduleTone(1080 * pitch, offset, duration, 0.04, 'triangle');
   }
 
   function beep(kind = 'tick') {
