@@ -323,10 +323,10 @@
   }
 
   function stadiumBlast(offset = 0, duration = 1, pitch = 1) {
-    scheduleTone(140 * pitch, offset, duration, 0.2, 'sine');
-    scheduleTone(280 * pitch, offset, duration, 0.18, 'triangle');
-    scheduleTone(420 * pitch, offset, duration, 0.16, 'sawtooth');
-    scheduleTone(560 * pitch, offset, duration, 0.1, 'square');
+    scheduleTone(180 * pitch, offset, duration, 0.14, 'sine');
+    scheduleTone(360 * pitch, offset, duration, 0.2, 'sawtooth');
+    scheduleTone(720 * pitch, offset, duration, 0.12, 'square');
+    scheduleTone(1080 * pitch, offset, duration, 0.04, 'triangle');
   }
 
   function beep(kind = 'tick') {
