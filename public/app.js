@@ -318,30 +318,22 @@
     oscillator.stop(start + duration + 0.03);
   }
 
-  function ringBell(offset = 0, pitch = 1) {
-    scheduleTone(520 * pitch, offset, 0.7, 0.16, 'sine');
-    scheduleTone(780 * pitch, offset, 0.52, 0.08, 'triangle');
-    scheduleTone(1160 * pitch, offset, 0.34, 0.035, 'sine');
-  }
-
   function beep(kind = 'tick') {
     if (!activeSession?.cues.sound || !audioContext) return;
     if (kind === 'tick') {
-      scheduleTone(820, 0, 0.09, 0.09);
+      scheduleTone(980, 0, 0.1, 0.1, 'square');
     } else if (kind === 'warning') {
-      [0, 0.16, 0.32].forEach((offset) => scheduleTone(1450, offset, 0.11, 0.1, 'square'));
+      [0, 0.17, 0.34].forEach((offset) => scheduleTone(1180, offset, 0.12, 0.09, 'square'));
     } else if (kind === 'rest') {
-      ringBell(0, 0.78);
-      ringBell(0.32, 0.66);
+      scheduleTone(720, 0, 0.72, 0.13, 'square');
     } else if (kind === 'round') {
-      ringBell(0, 1);
-      ringBell(0.24, 1.08);
+      scheduleTone(1040, 0, 0.82, 0.14, 'square');
     } else if (kind === 'finish') {
-      ringBell(0, 0.92);
-      ringBell(0.3, 0.92);
-      ringBell(0.6, 1.08);
+      scheduleTone(960, 0, 0.5, 0.13, 'square');
+      scheduleTone(960, 0.66, 0.5, 0.13, 'square');
+      scheduleTone(1160, 1.32, 0.9, 0.14, 'square');
     } else {
-      scheduleTone(1080, 0, 0.22, 0.16);
+      scheduleTone(1040, 0, 0.7, 0.14, 'square');
     }
   }
 
@@ -350,7 +342,7 @@
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ko-KR';
-    utterance.rate = 1.06;
+    utterance.rate = 1.36;
     utterance.pitch = 1;
     const koreanVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith('ko'));
     if (koreanVoice) utterance.voice = koreanVoice;
