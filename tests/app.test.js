@@ -54,6 +54,15 @@ test("arena transition buzzers are prominent and never overlap voice guidance", 
   assert.match(markup, /경기장 신호음/);
 });
 
+test("three-second countdown tones use the audio clock at exact one-second intervals", () => {
+  assert.match(appCode, /\[3000, 2000, 1000\]\.forEach/);
+  assert.match(appCode, /delayMs = remainingMs - thresholdMs/);
+  assert.match(appCode, /scheduleTone\(1080, delayMs \/ 1000, 0\.11, 0\.11, 'square'\)/);
+  assert.match(appCode, /function cancelCountdownTones/);
+  assert.match(appCode, /schedulePhaseCountdown\(\);/);
+  assert.doesNotMatch(appCode, /\[3, 2, 1\]\.includes\(second\)/);
+});
+
 test("metadata and health route are provided by Next.js", () => {
   assert.match(layout, /export const metadata/);
   assert.match(layout, /export const viewport/);

@@ -102,6 +102,7 @@
   let audioContext = null;
   let wakeLock = null;
   let lastCueSecond = null;
+  let countdownOscillators = new Set();
   let voiceCueTimer = null;
   let toastTimer = null;
   let recoveryCandidate = null;
@@ -320,6 +321,29 @@
     oscillator.connect(gain).connect(audioContext.destination);
     oscillator.start(start);
     oscillator.stop(start + duration + 0.03);
+    return oscillator;
+  }
+
+  function cancelCountdownTones() {
+    countdownOscillators.forEach((oscillator) => {
+      try { oscillator.stop(); } catch (_) { /* already stopped */ }
+    });
+    countdownOscillators.clear();
+  }
+
+  function schedulePhaseCountdown() {
+    cancelCountdownTones();
+    const phase = currentPhase();
+    if (!activeSession?.cues.sound || !audioContext || !phase?.durationMs || activeSession.status !== 'running') return;
+
+    const remainingMs = currentPhaseRemaining();
+    [3000, 2000, 1000].forEach((thresholdMs) => {
+      const delayMs = remainingMs - thresholdMs;
+      if (delayMs < 0) return;
+      const oscillator = scheduleTone(1080, delayMs / 1000, 0.11, 0.11, 'square');
+      countdownOscillators.add(oscillator);
+      oscillator.addEventListener('ended', () => countdownOscillators.delete(oscillator), { once: true });
+    });
   }
 
   function stadiumBlast(offset = 0, duration = 1, pitch = 1) {
@@ -446,6 +470,7 @@
     if (activeSession.status === 'running') {
       clearTimeout(voiceCueTimer);
       const cueDuration = beep(phase.type === 'rest' ? 'rest' : phase.type === 'prep' ? 'start' : 'round');
+      schedulePhaseCountdown();
       vibrate([80]);
       announceAfterCue(phaseAnnouncement(phase), cueDuration);
     }
@@ -569,10 +594,6 @@
       vibrate([45, 70, 45, 70, 45]);
       announceAfterCue('10초 후 시작합니다. 준비하세요.', cueDuration);
     }
-    if ([3, 2, 1].includes(second)) {
-      beep('tick');
-      vibrate(30);
-    }
   }
 
   function tick() {
@@ -608,6 +629,7 @@
     if (!activeSession) return;
     const phase = currentPhase();
     if (activeSession.status === 'running') {
+      cancelCountdownTones();
       clearTimeout(voiceCueTimer);
       voiceCueTimer = null;
       activeSession.pausedRemainingMs = phase.durationMs ? currentPhaseRemaining() : null;
@@ -629,6 +651,7 @@
         activeSession.phaseEndEpoch = Date.now() + activeSession.pausedRemainingMs;
       }
       beep('start');
+      schedulePhaseCountdown();
       speak('계속합니다.');
       requestWakeLock();
     }
@@ -670,6 +693,7 @@
     document.body.style.overflow = '';
     clearInterval(ticker);
     ticker = null;
+    cancelCountdownTones();
     releaseWakeLock();
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   }
