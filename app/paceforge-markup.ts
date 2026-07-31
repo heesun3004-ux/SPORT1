@@ -11,7 +11,7 @@ export const paceforgeMarkup = String.raw`
       <a href="#studio">타이머</a>
       <a href="#history">기록</a>
     </nav>
-    <a class="nav-cta" href="#studio">START TRAINING <span aria-hidden="true">↗</span></a>
+    <a class="nav-cta" href="#studio">타이머 시작 <span aria-hidden="true">↗</span></a>
   </header>
 
   <nav class="mobile-category-nav" aria-label="모바일 주요 카테고리">
@@ -25,17 +25,17 @@ export const paceforgeMarkup = String.raw`
   <main>
     <section class="hero" aria-labelledby="hero-title" data-mobile-panel="home">
       <div class="hero-copy">
-        <p class="eyebrow"><span></span> HYBRID PERFORMANCE TIMER</p>
-        <h1 id="hero-title">전환을 지배하면<br><em>기록이 달라진다.</em></h1>
-        <p class="hero-lead">크로스핏의 매 세트와 HYROX의 모든 구간을 놓치지 않도록. 큰 화면, 정확한 시간, 한국어 음성이 당신의 다음 움직임을 먼저 알려줍니다.</p>
+        <p class="eyebrow"><span></span> CROSSFIT · HYROX TIMER</p>
+        <h1 id="hero-title">시간은 맡기고<br><em>운동에 집중하세요.</em></h1>
+        <p class="hero-lead">운동·휴식·세트 전환을 신호음과 한국어 음성으로 알려드립니다.</p>
         <div class="hero-actions">
-          <a class="button button-primary" href="#studio">나의 타이머 만들기 <span aria-hidden="true">→</span></a>
-          <button class="button button-ghost" type="button" data-quick-mode="hyrox">HYROX 시뮬레이션</button>
+          <a class="button button-primary" href="#studio">타이머 설정하기 <span aria-hidden="true">→</span></a>
+          <button class="button button-ghost" type="button" data-quick-mode="hyrox">HYROX 시작하기</button>
         </div>
         <div class="hero-metrics" aria-label="주요 기능">
-          <div><strong>06</strong><span>TRAINING MODES</span></div>
-          <div><strong>16</strong><span>HYROX STAGES</span></div>
-          <div><strong>LIVE</strong><span>VOICE CUES</span></div>
+          <div><strong>06</strong><span>타이머 모드</span></div>
+          <div><strong>16</strong><span>HYROX 구간</span></div>
+          <div><strong>KR</strong><span>한국어 음성</span></div>
         </div>
       </div>
 
@@ -46,7 +46,7 @@ export const paceforgeMarkup = String.raw`
           <div><small>NEXT SIGNAL</small><strong>00:10</strong></div>
           <b>WORK</b>
         </div>
-        <p class="visual-caption">BUILT FOR THE MOMENT<br>BETWEEN DONE &amp; NEXT.</p>
+        <p class="visual-caption">READY FOR<br>THE NEXT ROUND.</p>
       </div>
     </section>
 
@@ -60,30 +60,30 @@ export const paceforgeMarkup = String.raw`
     <section class="section modes-section" id="modes" aria-labelledby="modes-title" data-mobile-panel="modes">
       <div class="section-heading">
         <div>
-          <p class="eyebrow"><span></span> BUILT AROUND THE SPORT</p>
-          <h2 id="modes-title">운동 방식이 다르면<br>타이머도 달라야 한다.</h2>
+          <p class="eyebrow"><span></span> 운동 모드</p>
+          <h2 id="modes-title">원하는 운동을<br>바로 시작하세요.</h2>
         </div>
-        <p>시간이 운동을 이끄는 크로스핏과, 완주가 다음 구간을 여는 HYROX. 각 종목의 실제 흐름을 하나의 엔진 안에서 정확히 분리했습니다.</p>
+        <p>인터벌부터 HYROX까지 운동 방식에 맞는 타이머를 선택하세요.</p>
       </div>
 
       <div class="mode-grid">
         <article class="mode-card mode-card-featured">
           <div class="mode-card-top"><span>01</span><span class="mode-tag">QUICK START</span></div>
           <h3>INTERVAL</h3>
-          <p>운동·휴식·세트 수를 자유롭게 조합하고, 비프음과 음성 안내로 화면을 보지 않고도 훈련합니다.</p>
-          <button type="button" data-quick-mode="interval">60초 / 30초로 시작 <span>→</span></button>
+          <p>운동 시간, 휴식 시간, 세트 수를 직접 설정합니다.</p>
+          <button type="button" data-quick-mode="interval">인터벌 설정 <span>→</span></button>
         </article>
         <article class="mode-card">
           <div class="mode-card-top"><span>02</span><span class="mode-tag">CROSSFIT</span></div>
           <h3>WOD CLOCK</h3>
-          <p>AMRAP, EMOM, Tabata와 For Time. 시간 형식에 맞춰 카운트다운과 라운드 전환을 다르게 안내합니다.</p>
-          <button type="button" data-quick-mode="amrap">12분 AMRAP 설정 <span>→</span></button>
+          <p>AMRAP, EMOM, 타바타, 포타임을 선택해 시작합니다.</p>
+          <button type="button" data-quick-mode="amrap">WOD 타이머 선택 <span>→</span></button>
         </article>
         <article class="mode-card mode-card-orange">
           <div class="mode-card-top"><span>03</span><span class="mode-tag">FITNESS RACE</span></div>
           <h3>HYROX 8</h3>
-          <p>8회의 1km 러닝과 8개 스테이션을 수동 완료 방식으로 진행하고 구간별 스플릿을 기록합니다.</p>
-          <button type="button" data-quick-mode="hyrox">전체 레이스 불러오기 <span>→</span></button>
+          <p>러닝과 8개 스테이션의 구간 기록을 차례로 저장합니다.</p>
+          <button type="button" data-quick-mode="hyrox">HYROX 불러오기 <span>→</span></button>
         </article>
       </div>
     </section>
@@ -91,10 +91,10 @@ export const paceforgeMarkup = String.raw`
     <section class="section studio-section" id="studio" aria-labelledby="studio-title" data-mobile-panel="timer">
       <div class="studio-heading">
         <div>
-          <p class="eyebrow eyebrow-dark"><span></span> SESSION BUILDER</p>
-          <h2 id="studio-title">오늘의 고통을<br>정확하게 설계하세요.</h2>
+          <p class="eyebrow eyebrow-dark"><span></span> 타이머 설정</p>
+          <h2 id="studio-title">시간만 정하면<br>바로 시작됩니다.</h2>
         </div>
-        <p class="studio-status"><span></span> AUDIO ENGINE READY</p>
+        <p class="studio-status"><span></span> 소리 안내 준비됨</p>
       </div>
 
       <div class="studio-shell">
@@ -111,7 +111,7 @@ export const paceforgeMarkup = String.raw`
           <form class="session-form" id="sessionForm">
             <div class="form-intro">
               <span id="modeNumber">01</span>
-              <div><small>SELECTED PROTOCOL</small><h3 id="modeTitle">CUSTOM INTERVAL</h3></div>
+              <div><small>선택한 모드</small><h3 id="modeTitle">CUSTOM INTERVAL</h3></div>
             </div>
 
             <div id="standardFields" class="field-grid">
@@ -135,17 +135,17 @@ export const paceforgeMarkup = String.raw`
             </div>
 
             <button class="start-session" id="startSession" type="submit">
-              <span>START SESSION</span><b aria-hidden="true">→</b>
+              <span>운동 시작</span><b aria-hidden="true">→</b>
             </button>
-            <p class="form-note">시작 버튼을 누르면 브라우저의 오디오가 활성화됩니다. 스페이스바로 일시정지할 수 있습니다.</p>
+            <p class="form-note">시작하면 소리 안내가 켜집니다. 스페이스바로 일시정지할 수 있습니다.</p>
           </form>
 
           <aside class="session-preview" aria-label="세션 미리보기">
-            <div class="preview-top"><span>LIVE PREVIEW</span><b id="previewMode">INTERVAL</b></div>
+            <div class="preview-top"><span>미리보기</span><b id="previewMode">INTERVAL</b></div>
             <div class="preview-clock" id="previewClock">01:00</div>
             <p id="previewLabel">WORK / SET 1 OF 5</p>
             <div class="preview-progress"><span id="previewProgress"></span></div>
-            <div class="preview-next"><small>NEXT</small><strong id="previewNext">REST · 00:30</strong></div>
+            <div class="preview-next"><small>다음</small><strong id="previewNext">REST · 00:30</strong></div>
             <div class="preview-specs">
               <div><span>총 시간</span><strong id="totalTime">07:00</strong></div>
               <div><span>전환 방식</span><strong id="transitionType">AUTO</strong></div>
@@ -157,27 +157,27 @@ export const paceforgeMarkup = String.raw`
 
     <section class="section reliability-section" aria-labelledby="reliability-title" data-mobile-panel="features">
       <div class="reliability-copy">
-        <p class="eyebrow"><span></span> ENGINEERED FOR THE FLOOR</p>
-        <h2 id="reliability-title">운동 중에는<br>타이머를 의심하지 마세요.</h2>
-        <p>PACEFORGE는 매 틱을 단순히 차감하지 않습니다. 실제 시작 시각을 기준으로 남은 시간을 다시 계산해 화면 전환이나 순간적인 성능 저하 뒤에도 정확한 흐름을 유지합니다.</p>
+        <p class="eyebrow"><span></span> 자동 안내 기능</p>
+        <h2 id="reliability-title">화면을 보지 않아도<br>흐름을 놓치지 않아요.</h2>
+        <p>구간이 바뀔 때 필요한 내용을 소리와 화면으로 알려드립니다.</p>
       </div>
       <div class="feature-list">
-        <article><span>01</span><div><h3>ABSOLUTE TIME</h3><p>백그라운드에 다녀와도 실제 경과 시간으로 즉시 보정합니다.</p></div></article>
-        <article><span>02</span><div><h3>VOICE FIRST</h3><p>종료 10초 전과 세트 전환을 한국어 음성·비프음으로 안내합니다.</p></div></article>
-        <article><span>03</span><div><h3>SESSION RECOVERY</h3><p>실수로 새로고침해도 현재 세션을 기기에 저장해 복구할 수 있습니다.</p></div></article>
-        <article><span>04</span><div><h3>SCREEN AWAKE</h3><p>지원되는 기기에서는 운동 중 화면이 자동으로 꺼지지 않게 유지합니다.</p></div></article>
+        <article><span>01</span><div><h3>정확한 시간</h3><p>앱을 잠시 벗어나도 남은 시간을 자동으로 맞춥니다.</p></div></article>
+        <article><span>02</span><div><h3>한국어 음성 안내</h3><p>운동 시작, 휴식, 세트 전환을 소리와 음성으로 알려드립니다.</p></div></article>
+        <article><span>03</span><div><h3>중단 후 이어하기</h3><p>새로고침해도 진행 중인 세션을 이어갈 수 있습니다.</p></div></article>
+        <article><span>04</span><div><h3>화면 꺼짐 방지</h3><p>지원되는 기기에서는 운동 중 화면을 계속 켜둡니다.</p></div></article>
       </div>
     </section>
 
     <section class="section history-section" id="history" aria-labelledby="history-title" data-mobile-panel="history">
-      <div class="history-heading"><div><p class="eyebrow eyebrow-dark"><span></span> LOCAL HISTORY</p><h2 id="history-title">마친 세션은<br>기록으로 남습니다.</h2></div><button id="clearHistory" class="text-button" type="button">기록 지우기</button></div>
+      <div class="history-heading"><div><p class="eyebrow eyebrow-dark"><span></span> 운동 기록</p><h2 id="history-title">완료한 운동을<br>한눈에 확인하세요.</h2></div><button id="clearHistory" class="text-button" type="button">기록 지우기</button></div>
       <div class="history-list" id="historyList"></div>
     </section>
   </main>
 
   <footer class="site-footer" data-mobile-panel="home">
     <a class="brand" href="#top"><span class="brand-mark">PF</span><span>PACEFORGE</span></a>
-    <p>TRAIN THE TRANSITION.<br>OWN THE NEXT REP.</p>
+    <p>시간은 맡기고<br>운동에 집중하세요.</p>
     <small>본 서비스는 CrossFit, LLC 또는 HYROX World GmbH와 공식 제휴된 서비스가 아닙니다. 공식 경기 전에는 최신 규정을 확인하세요.</small>
   </footer>
 

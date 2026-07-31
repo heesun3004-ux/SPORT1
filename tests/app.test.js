@@ -86,3 +86,19 @@ test("mobile layout is divided into accessible top-level categories", () => {
   assert.match(styles, /\.mobile-category-nav/);
   assert.match(styles, /body\[data-mobile-view="timer"\]/);
 });
+
+test("section copy is concise, functional, and readable on mobile", () => {
+  for (const copy of [
+    "시간은 맡기고",
+    "원하는 운동을",
+    "시간만 정하면",
+    "화면을 보지 않아도",
+    "완료한 운동을",
+  ]) {
+    assert.match(markup, new RegExp(copy));
+  }
+  assert.doesNotMatch(markup, /오늘의 고통을/);
+  const styles = fs.readFileSync(path.join(root, "app/globals.css"), "utf8");
+  assert.match(styles, /\.section h2 \{ font-size: 38px/);
+  assert.match(styles, /\.hero-lead \{ font-size: 14px; line-height: 1\.65/);
+});
