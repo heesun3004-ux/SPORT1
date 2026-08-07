@@ -168,6 +168,12 @@ export const paceforgeMarkup = String.raw`
               <label><input id="vibrationEnabled" type="checkbox"><span class="toggle"></span><b>진동</b></label>
             </div>
 
+            <div class="audio-output-controls">
+              <button id="testAudioOutput" type="button">스피커 테스트</button>
+              <button id="selectAudioOutput" type="button" hidden>오디오 출력 선택</button>
+              <p id="audioOutputStatus" role="status">음성과 신호음은 휴대폰의 미디어 출력으로 함께 재생됩니다.</p>
+            </div>
+
             <button class="start-session" id="startSession" type="submit">
               <span>운동 시작</span><b aria-hidden="true">→</b>
             </button>

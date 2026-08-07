@@ -48,10 +48,25 @@ test("arena transition buzzers are prominent and never overlap voice guidance", 
   assert.match(appCode, /scheduleTone\(180 \* pitch/);
   assert.match(appCode, /return 1000/);
   assert.match(appCode, /gain\.gain\.setValueAtTime\(volume, releaseStart\)/);
-  assert.match(appCode, /announceAfterCue\(phaseAnnouncement\(phase\), cueDuration\)/);
+  assert.match(appCode, /announceAfterCue\(phaseVoiceCue\(phase\), cueDuration\)/);
   assert.match(appCode, /cueDuration \+ 120/);
-  assert.match(appCode, /utterance\.rate = 1\.26/);
   assert.match(markup, /경기장 신호음/);
+});
+
+test("voice cues share the media audio path used by Bluetooth speakers", () => {
+  assert.match(appCode, /const VOICE_ASSETS/);
+  assert.match(appCode, /audioContext\.createBufferSource\(\)/);
+  assert.match(appCode, /source\.connect\(gain\)\.connect\(audioContext\.destination\)/);
+  assert.match(appCode, /navigator\.mediaDevices\.selectAudioOutput\(\)/);
+  assert.match(appCode, /audioContext\.setSinkId\(device\.deviceId\)/);
+  assert.match(markup, /id="testAudioOutput"/);
+  assert.match(markup, /id="selectAudioOutput"/);
+  assert.doesNotMatch(appCode, /speechSynthesis|SpeechSynthesisUtterance/);
+
+  for (const filename of ["prep", "rest", "set", "warning", "complete", "output-test"]) {
+    const asset = path.join(root, "public", "audio", "voice", `${filename}.wav`);
+    assert.ok(fs.statSync(asset).size > 4096, `${filename}.wav should contain audio data`);
+  }
 });
 
 test("three-second countdown tones use the audio clock at exact one-second intervals", () => {
@@ -111,10 +126,11 @@ test("custom programs can be composed, saved, and run through the timer engine",
 
 test("the service worker refreshes the custom navigation release", () => {
   const worker = fs.readFileSync(path.join(root, "public/sw.js"), "utf8");
-  assert.match(worker, /paceforge-v3/);
+  assert.match(worker, /paceforge-v4-bluetooth-audio/);
+  assert.match(worker, /audio\/voice\/output-test\.wav/);
   assert.doesNotMatch(worker, /\/index\.html/);
   assert.doesNotMatch(worker, /\/styles\.css/);
-  assert.match(page, /app\.js\?v=20260731-custom-nav/);
+  assert.match(page, /app\.js\?v=20260807-bluetooth-audio/);
 });
 
 test("section copy is concise, functional, and readable on mobile", () => {

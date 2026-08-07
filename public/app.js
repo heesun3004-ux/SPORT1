@@ -19,6 +19,12 @@
     hyrox: { number: '06', title: 'HYROX FULL RACE', defaults: [10, 0, 0, 1], workLabel: '', roundLabel: '' },
   };
 
+  const VOICE_ASSETS = Object.fromEntries([
+    'prep', 'rest', 'set', 'custom', 'emom', 'fortime', 'amrap', 'warning',
+    'paused', 'resume', 'timecap', 'complete', 'output-test',
+    ...Array.from({ length: 16 }, (_, index) => `hyrox-${String(index + 1).padStart(2, '0')}`),
+  ].map((key) => [key, `/audio/voice/${key}.wav`]));
+
   const HYROX_STATIONS = [
     { name: 'RUN 1', target: '1 KM' },
     { name: 'SKIERG', target: '1,000 M' },
@@ -56,6 +62,9 @@
     sound: $('#soundEnabled'),
     voice: $('#voiceEnabled'),
     vibration: $('#vibrationEnabled'),
+    testAudioOutput: $('#testAudioOutput'),
+    selectAudioOutput: $('#selectAudioOutput'),
+    audioOutputStatus: $('#audioOutputStatus'),
     modeNumber: $('#modeNumber'),
     modeTitle: $('#modeTitle'),
     previewMode: $('#previewMode'),
@@ -111,6 +120,11 @@
   let lastCueSecond = null;
   let countdownOscillators = new Set();
   let voiceCueTimer = null;
+  let voiceRequestId = 0;
+  let currentVoiceSource = null;
+  let selectedOutputDevice = null;
+  const voiceBuffers = new Map();
+  const voiceBufferPromises = new Map();
   let toastTimer = null;
   let recoveryCandidate = null;
 
@@ -475,6 +489,111 @@
     if (audioContext?.state === 'suspended') await audioContext.resume();
   }
 
+  function updateAudioOutputStatus(message) {
+    if (refs.audioOutputStatus) refs.audioOutputStatus.textContent = message;
+  }
+
+  async function loadVoiceBuffer(cue) {
+    if (!audioContext || !VOICE_ASSETS[cue]) return null;
+    if (voiceBuffers.has(cue)) return voiceBuffers.get(cue);
+    if (voiceBufferPromises.has(cue)) return voiceBufferPromises.get(cue);
+
+    const promise = fetch(VOICE_ASSETS[cue], { cache: 'force-cache' })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Voice asset unavailable: ${cue}`);
+        return response.arrayBuffer();
+      })
+      .then((data) => audioContext.decodeAudioData(data))
+      .then((buffer) => {
+        voiceBuffers.set(cue, buffer);
+        voiceBufferPromises.delete(cue);
+        return buffer;
+      })
+      .catch(() => {
+        voiceBufferPromises.delete(cue);
+        return null;
+      });
+
+    voiceBufferPromises.set(cue, promise);
+    return promise;
+  }
+
+  function cancelVoicePlayback() {
+    voiceRequestId += 1;
+    if (!currentVoiceSource) return;
+    try { currentVoiceSource.stop(); } catch (_) { /* already stopped */ }
+    currentVoiceSource = null;
+  }
+
+  async function speak(cue, enabled = activeSession?.cues.voice) {
+    if (!enabled || !audioContext || !VOICE_ASSETS[cue]) return;
+    const requestId = ++voiceRequestId;
+    const buffer = await loadVoiceBuffer(cue);
+    if (!buffer || requestId !== voiceRequestId) return;
+
+    if (currentVoiceSource) {
+      try { currentVoiceSource.stop(); } catch (_) { /* already stopped */ }
+    }
+
+    const source = audioContext.createBufferSource();
+    const gain = audioContext.createGain();
+    gain.gain.value = 1;
+    source.buffer = buffer;
+    source.connect(gain).connect(audioContext.destination);
+    currentVoiceSource = source;
+    source.addEventListener('ended', () => {
+      if (currentVoiceSource === source) currentVoiceSource = null;
+    }, { once: true });
+    source.start();
+  }
+
+  function phaseVoiceCue(phase, session = activeSession) {
+    if (phase.type === 'prep') return 'prep';
+    if (phase.type === 'rest') return 'rest';
+    if (session.mode === 'custom') return 'custom';
+    if (session.mode === 'emom') return 'emom';
+    if (session.mode === 'hyrox') return `hyrox-${String(phase.round).padStart(2, '0')}`;
+    if (session.mode === 'fortime') return 'fortime';
+    if (session.mode === 'amrap') return 'amrap';
+    return 'set';
+  }
+
+  async function prepareSessionVoice(session) {
+    if (!session?.cues.voice || !audioContext) return;
+    const cues = [...new Set(session.phases.map((phase) => phaseVoiceCue(phase, session)))];
+    if (cues[0]) await loadVoiceBuffer(cues[0]);
+    cues.slice(1).forEach((cue) => { loadVoiceBuffer(cue); });
+  }
+
+  async function testAudioOutput() {
+    try {
+      await unlockAudio();
+      scheduleTone(880, 0, 0.14, 0.1, 'sine');
+      scheduleTone(1175, 0.18, 0.14, 0.1, 'sine');
+      setTimeout(() => { speak('output-test', true); }, 480);
+      updateAudioOutputStatus(selectedOutputDevice
+        ? `${selectedOutputDevice.label || '선택한 스피커'}로 테스트 소리를 재생했습니다.`
+        : '현재 휴대폰의 미디어 출력으로 테스트 소리를 재생했습니다.');
+    } catch (_) {
+      updateAudioOutputStatus('소리를 시작하지 못했습니다. 다시 눌러 주세요.');
+    }
+  }
+
+  async function selectAudioOutput() {
+    try {
+      await unlockAudio();
+      const device = await navigator.mediaDevices.selectAudioOutput();
+      await audioContext.setSinkId(device.deviceId);
+      selectedOutputDevice = device;
+      updateAudioOutputStatus(`${device.label || '선택한 스피커'}로 음성과 신호음을 재생합니다.`);
+      await testAudioOutput();
+    } catch (error) {
+      if (error?.name !== 'NotAllowedError') {
+        updateAudioOutputStatus('출력 장치를 바꾸지 못했습니다. 휴대폰 Bluetooth 설정을 확인해 주세요.');
+      }
+    }
+  }
+
   function scheduleTone(frequency, offset, duration, volume, type = 'sine') {
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
@@ -546,40 +665,17 @@
     }
   }
 
-  function speak(text, enabled = activeSession?.cues.voice) {
-    if (!enabled || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ko-KR';
-    utterance.rate = 1.26;
-    utterance.pitch = 1;
-    const koreanVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith('ko'));
-    if (koreanVoice) utterance.voice = koreanVoice;
-    window.speechSynthesis.speak(utterance);
-  }
-
-  function announceAfterCue(text, cueDuration = 0) {
+  function announceAfterCue(cue, cueDuration = 0) {
     clearTimeout(voiceCueTimer);
     const voiceEnabled = Boolean(activeSession?.cues.voice);
     voiceCueTimer = setTimeout(() => {
-      speak(text, voiceEnabled);
+      speak(cue, voiceEnabled);
       voiceCueTimer = null;
     }, cueDuration + 120);
   }
 
   function vibrate(pattern) {
     if (activeSession?.cues.vibration && navigator.vibrate) navigator.vibrate(pattern);
-  }
-
-  function phaseAnnouncement(phase) {
-    if (phase.type === 'prep') return '운동을 시작합니다. 준비하세요.';
-    if (phase.type === 'rest') return `${Math.round(phase.durationMs / 1000)}초 휴식입니다.`;
-    if (activeSession.mode === 'custom') return `${phase.label}, ${phase.customSet}세트 시작입니다.`;
-    if (activeSession.mode === 'emom') return `${phase.round}분 시작입니다.`;
-    if (activeSession.mode === 'hyrox') return `${phase.label}, ${phase.target} 시작입니다.`;
-    if (activeSession.mode === 'fortime') return '포 타임 시작입니다.';
-    if (activeSession.mode === 'amrap') return '에이맵 시작입니다.';
-    return `${phase.round}세트 시작입니다.`;
   }
 
   async function requestWakeLock() {
@@ -639,10 +735,11 @@
 
     if (activeSession.status === 'running') {
       clearTimeout(voiceCueTimer);
+      cancelVoicePlayback();
       const cueDuration = beep(phase.type === 'rest' ? 'rest' : phase.type === 'prep' ? 'start' : 'round');
       schedulePhaseCountdown();
       vibrate([80]);
-      announceAfterCue(phaseAnnouncement(phase), cueDuration);
+      announceAfterCue(phaseVoiceCue(phase), cueDuration);
     }
 
     renderTimer();
@@ -769,7 +866,7 @@
     if (second === 10 && phase.type === 'rest') {
       const cueDuration = beep('warning');
       vibrate([45, 70, 45, 70, 45]);
-      announceAfterCue('10초 후 시작합니다. 준비하세요.', cueDuration);
+      announceAfterCue('warning', cueDuration);
     }
   }
 
@@ -789,7 +886,7 @@
     }
 
     if (phase.capMs && elapsed >= phase.capMs) {
-      speak('타임캡입니다. 운동을 종료합니다.');
+      speak('timecap');
       completeSession();
       return;
     }
@@ -813,8 +910,8 @@
       activeSession.pausedElapsedMs = currentPhaseElapsed();
       activeSession.pausedAtEpoch = Date.now();
       activeSession.status = 'paused';
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      speak('일시정지');
+      cancelVoicePlayback();
+      speak('paused');
       releaseWakeLock();
     } else {
       const nowPerf = performance.now();
@@ -829,7 +926,7 @@
       }
       beep('start');
       schedulePhaseCountdown();
-      speak('계속합니다.');
+      speak('resume');
       requestWakeLock();
     }
     renderTimer();
@@ -871,13 +968,14 @@
     clearInterval(ticker);
     ticker = null;
     cancelCountdownTones();
+    cancelVoicePlayback();
     releaseWakeLock();
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   }
 
   async function startSessionFromSettings(settings) {
     await unlockAudio();
     activeSession = buildSession(settings);
+    await prepareSessionVoice(activeSession);
     lastSessionConfig = { kind: 'standard', settings };
     openTimerScreen();
     startPhase(0);
@@ -891,6 +989,7 @@
     await unlockAudio();
     saveCustomDraft(settings);
     activeSession = buildCustomProgramSession(settings);
+    await prepareSessionVoice(activeSession);
     lastSessionConfig = { kind: 'custom', settings };
     openTimerScreen();
     startPhase(0);
@@ -946,7 +1045,7 @@
     saveHistory(result);
     clearPersistedSession();
     closeTimerScreen();
-    announceAfterCue('운동이 종료되었습니다. 수고하셨습니다.', cueDuration);
+    announceAfterCue('complete', cueDuration);
 
     refs.resultTime.textContent = formatElapsed(elapsedMs);
     refs.splitList.innerHTML = activeSession.splits.length
@@ -984,6 +1083,7 @@
     if (!recoveryCandidate) return;
     await unlockAudio();
     activeSession = recoveryCandidate;
+    await prepareSessionVoice(activeSession);
     lastSessionConfig = activeSession.mode === 'custom'
       ? {
         kind: 'custom',
@@ -1073,6 +1173,9 @@
       await startCustomProgram(readCustomProgram());
     });
 
+    refs.testAudioOutput.addEventListener('click', testAudioOutput);
+    refs.selectAudioOutput.addEventListener('click', selectAudioOutput);
+
     refs.pause.addEventListener('click', togglePause);
     refs.next.addEventListener('click', advancePhase);
     refs.previous.addEventListener('click', previousPhase);
@@ -1132,6 +1235,15 @@
   }
 
   function initialize() {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    const supportsOutputSelection = Boolean(
+      navigator.mediaDevices?.selectAudioOutput
+      && AudioContextClass?.prototype?.setSinkId,
+    );
+    refs.selectAudioOutput.hidden = !supportsOutputSelection;
+    if (supportsOutputSelection) {
+      updateAudioOutputStatus('Bluetooth 스피커를 직접 선택하거나 현재 미디어 출력으로 테스트할 수 있습니다.');
+    }
     setMode('interval');
     initializeCustomProgram();
     setMobileView(HASH_TO_VIEW[location.hash] || 'home', false);

@@ -1,10 +1,16 @@
-const CACHE_NAME = 'paceforge-v3';
+const CACHE_NAME = 'paceforge-v4-bluetooth-audio';
 const CORE_ASSETS = [
   '/',
   '/app.js',
   '/manifest.webmanifest',
   '/assets/paceforge-hero.jpg',
   '/og.png',
+  '/audio/voice/prep.wav',
+  '/audio/voice/rest.wav',
+  '/audio/voice/set.wav',
+  '/audio/voice/warning.wav',
+  '/audio/voice/complete.wav',
+  '/audio/voice/output-test.wav',
 ];
 
 self.addEventListener('install', (event) => {
