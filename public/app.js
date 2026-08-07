@@ -40,11 +40,10 @@
   };
 
   const VOICE_ASSET_KEYS = new Set([
-    'prep', 'rest-suffix', 'set', 'interval', 'tabata', 'custom', 'emom', 'fortime', 'amrap', 'warning',
+    'prep', 'set', 'interval', 'tabata', 'custom', 'emom', 'fortime', 'amrap', 'warning',
     'paused', 'resume', 'timecap', 'complete', 'output-test',
     ...Array.from({ length: 16 }, (_, index) => `hyrox-${String(index + 1).padStart(2, '0')}`),
-    ...Array.from({ length: 10 }, (_, index) => `number-${index}`),
-    'number-10', 'number-100', 'number-1000',
+    ...Array.from({ length: 300 }, (_, index) => `rest-${String(index + 1).padStart(3, '0')}`),
     ...Object.values(CUSTOM_EXERCISE_VOICE_CUES),
   ]);
   const VOICE_ASSETS = Object.fromEntries(
@@ -267,7 +266,7 @@
       mode: selectedMode,
       prep: clampNumber(refs.prep.value, 10, 0, 300),
       work: clampNumber(refs.work.value, 60, 5, 7200),
-      rest: clampNumber(refs.rest.value, 0, 0, 3600),
+      rest: clampNumber(refs.rest.value, 0, 0, 300),
       rounds: clampNumber(refs.rounds.value, 1, 1, 100),
       division: refs.division.value,
       name: refs.name.value.trim() || MODE_CONFIG[selectedMode].title,
@@ -282,12 +281,12 @@
   function customBlockMarkup(block = {}) {
     const name = escapeHtml(block.name || '새 운동');
     const work = clampNumber(block.work, 40, 5, 7200);
-    const rest = clampNumber(block.rest, 20, 0, 3600);
+    const rest = clampNumber(block.rest, 20, 0, 300);
     const sets = clampNumber(block.sets, 3, 1, 100);
     return `<div class="custom-block">
       <label class="custom-field"><span>운동 이름</span><input class="custom-exercise-name" type="text" maxlength="40" value="${name}" autocomplete="off" required></label>
       <label class="custom-field"><span>운동 시간</span><div><input class="custom-work" type="number" min="5" max="7200" value="${work}" inputmode="numeric" required><b>초</b></div></label>
-      <label class="custom-field"><span>휴식 시간</span><div><input class="custom-rest" type="number" min="0" max="3600" value="${rest}" inputmode="numeric" required><b>초</b></div></label>
+      <label class="custom-field"><span>휴식 시간</span><div><input class="custom-rest" type="number" min="0" max="300" value="${rest}" inputmode="numeric" required><b>초</b></div></label>
       <label class="custom-field"><span>세트 수</span><div><input class="custom-sets" type="number" min="1" max="100" value="${sets}" inputmode="numeric" required><b>SET</b></div></label>
       <button class="remove-custom-block" type="button" aria-label="운동 삭제">×</button>
     </div>`;
@@ -306,7 +305,7 @@
     const blocks = $$('.custom-block', refs.customList).map((row, index) => ({
       name: $('.custom-exercise-name', row).value.trim() || `운동 ${index + 1}`,
       work: clampNumber($('.custom-work', row).value, 40, 5, 7200),
-      rest: clampNumber($('.custom-rest', row).value, 20, 0, 3600),
+      rest: clampNumber($('.custom-rest', row).value, 20, 0, 300),
       sets: clampNumber($('.custom-sets', row).value, 3, 1, 100),
     }));
     return {
@@ -580,22 +579,6 @@
     });
   }
 
-  function numberVoiceCues(value) {
-    const number = Math.max(0, Math.min(3600, Math.round(Number(value) || 0)));
-    if (number === 0) return ['number-0'];
-
-    const cues = [];
-    let remainder = number;
-    [1000, 100, 10, 1].forEach((unit) => {
-      const digit = Math.floor(remainder / unit);
-      remainder %= unit;
-      if (!digit) return;
-      if (unit === 1 || digit > 1) cues.push(`number-${digit}`);
-      if (unit > 1) cues.push(`number-${unit}`);
-    });
-    return cues;
-  }
-
   function customExerciseVoiceCue(label) {
     const normalized = String(label || '').trim().replace(/\s+/g, ' ');
     return CUSTOM_EXERCISE_VOICE_CUES[normalized] || 'custom';
@@ -604,7 +587,8 @@
   function phaseVoiceCue(phase, session = activeSession) {
     if (phase.type === 'prep') return ['prep'];
     if (phase.type === 'rest') {
-      return [...numberVoiceCues(phase.durationMs / 1000), 'rest-suffix'];
+      const restSeconds = Math.max(1, Math.min(300, Math.round(phase.durationMs / 1000)));
+      return [`rest-${String(restSeconds).padStart(3, '0')}`];
     }
     if (session.mode === 'custom') return [customExerciseVoiceCue(phase.label)];
     if (session.mode === 'interval') return ['interval'];

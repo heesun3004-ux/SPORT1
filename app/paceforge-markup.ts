@@ -151,7 +151,7 @@ export const paceforgeMarkup = String.raw`
             <div id="standardFields" class="field-grid">
               <label class="field"><span>준비 시간</span><div><input id="prepTime" type="number" min="0" max="300" value="10" inputmode="numeric"><b>초</b></div></label>
               <label class="field" id="workField"><span>운동 시간</span><div><input id="workTime" type="number" min="5" max="7200" value="60" inputmode="numeric"><b>초</b></div></label>
-              <label class="field" id="restField"><span>휴식 시간</span><div><input id="restTime" type="number" min="0" max="3600" value="30" inputmode="numeric"><b>초</b></div></label>
+              <label class="field" id="restField"><span>휴식 시간</span><div><input id="restTime" type="number" min="0" max="300" value="30" inputmode="numeric"><b>초</b></div></label>
               <label class="field" id="roundField"><span>세트 수</span><div><input id="rounds" type="number" min="1" max="100" value="5" inputmode="numeric"><b>SET</b></div></label>
             </div>
 

@@ -13,14 +13,34 @@ mkdir -p "$output_dir"
 generate_voice() {
   local filename="$1"
   local message="$2"
+  local sample_rate="${3:-22050}"
+  local speech_rate="${4:-230}"
   local aiff_file="$temporary_dir/$filename.aiff"
 
-  say -v Yuna -r 230 -o "$aiff_file" "$message"
-  afconvert "$aiff_file" "$output_dir/$filename.wav" -f WAVE -d LEI16@22050
+  say -v Yuna -r "$speech_rate" -o "$aiff_file" "$message"
+  afconvert "$aiff_file" "$output_dir/$filename.wav" -f WAVE -d "LEI16@$sample_rate"
+}
+
+generate_rest_phrases() {
+  local -a pending_pids=()
+  local seconds filename process_id
+
+  for seconds in {1..300}; do
+    filename="rest-$(printf '%03d' "$seconds")"
+    generate_voice "$filename" "${seconds}초 휴식입니다." 16000 215 &
+    process_id=$!
+    pending_pids+=("$process_id")
+
+    if (( ${#pending_pids[@]} == 4 )); then
+      for process_id in "${pending_pids[@]}"; do wait "$process_id"; done
+      pending_pids=()
+    fi
+  done
+
+  for process_id in "${pending_pids[@]}"; do wait "$process_id"; done
 }
 
 generate_voice "prep" "운동을 시작합니다. 준비하세요."
-generate_voice "rest-suffix" "초 휴식입니다."
 generate_voice "set" "운동 시작입니다."
 generate_voice "interval" "인터벌 시작입니다."
 generate_voice "tabata" "타바타 시작입니다."
@@ -52,20 +72,6 @@ generate_voice "hyrox-14" "샌드백 런지 시작입니다."
 generate_voice "hyrox-15" "런 팔 시작입니다."
 generate_voice "hyrox-16" "월 볼 시작입니다."
 
-generate_voice "number-0" "영"
-generate_voice "number-1" "일"
-generate_voice "number-2" "이"
-generate_voice "number-3" "삼"
-generate_voice "number-4" "사"
-generate_voice "number-5" "오"
-generate_voice "number-6" "육"
-generate_voice "number-7" "칠"
-generate_voice "number-8" "팔"
-generate_voice "number-9" "구"
-generate_voice "number-10" "십"
-generate_voice "number-100" "백"
-generate_voice "number-1000" "천"
-
 generate_voice "exercise-burpee" "버피 시작입니다."
 generate_voice "exercise-air-squat" "에어 스쿼트 시작입니다."
 generate_voice "exercise-squat" "스쿼트 시작입니다."
@@ -81,5 +87,7 @@ generate_voice "exercise-clean" "클린 시작입니다."
 generate_voice "exercise-thruster" "쓰러스터 시작입니다."
 generate_voice "exercise-row" "로잉 시작입니다."
 generate_voice "exercise-run" "러닝 시작입니다."
+
+generate_rest_phrases
 
 echo "Generated PACEFORGE Korean voice assets in $output_dir"
