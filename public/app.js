@@ -19,11 +19,37 @@
     hyrox: { number: '06', title: 'HYROX FULL RACE', defaults: [10, 0, 0, 1], workLabel: '', roundLabel: '' },
   };
 
-  const VOICE_ASSETS = Object.fromEntries([
-    'prep', 'rest', 'set', 'custom', 'emom', 'fortime', 'amrap', 'warning',
+  const CUSTOM_EXERCISE_VOICE_CUES = {
+    '버피': 'exercise-burpee',
+    '에어 스쿼트': 'exercise-air-squat',
+    '스쿼트': 'exercise-squat',
+    '푸시업': 'exercise-push-up',
+    '푸시 업': 'exercise-push-up',
+    '런지': 'exercise-lunge',
+    '플랭크': 'exercise-plank',
+    '마운틴 클라이머': 'exercise-mountain-climber',
+    '점핑 잭': 'exercise-jumping-jack',
+    '점핑잭': 'exercise-jumping-jack',
+    '케틀벨 스윙': 'exercise-kettlebell-swing',
+    '데드리프트': 'exercise-deadlift',
+    '스내치': 'exercise-snatch',
+    '클린': 'exercise-clean',
+    '쓰러스터': 'exercise-thruster',
+    '로잉': 'exercise-row',
+    '러닝': 'exercise-run',
+  };
+
+  const VOICE_ASSET_KEYS = new Set([
+    'prep', 'rest-suffix', 'set', 'interval', 'tabata', 'custom', 'emom', 'fortime', 'amrap', 'warning',
     'paused', 'resume', 'timecap', 'complete', 'output-test',
     ...Array.from({ length: 16 }, (_, index) => `hyrox-${String(index + 1).padStart(2, '0')}`),
-  ].map((key) => [key, `/audio/voice/${key}.wav`]));
+    ...Array.from({ length: 10 }, (_, index) => `number-${index}`),
+    'number-10', 'number-100', 'number-1000',
+    ...Object.values(CUSTOM_EXERCISE_VOICE_CUES),
+  ]);
+  const VOICE_ASSETS = Object.fromEntries(
+    [...VOICE_ASSET_KEYS].map((key) => [key, `/audio/voice/${key}.wav`]),
+  );
 
   const HYROX_STATIONS = [
     { name: 'RUN 1', target: '1 KM' },
@@ -121,7 +147,7 @@
   let countdownOscillators = new Set();
   let voiceCueTimer = null;
   let voiceRequestId = 0;
-  let currentVoiceSource = null;
+  const currentVoiceSources = new Set();
   let selectedOutputDevice = null;
   const voiceBuffers = new Map();
   const voiceBufferPromises = new Map();
@@ -520,49 +546,83 @@
 
   function cancelVoicePlayback() {
     voiceRequestId += 1;
-    if (!currentVoiceSource) return;
-    try { currentVoiceSource.stop(); } catch (_) { /* already stopped */ }
-    currentVoiceSource = null;
+    currentVoiceSources.forEach((source) => {
+      try { source.stop(); } catch (_) { /* already stopped */ }
+    });
+    currentVoiceSources.clear();
   }
 
-  async function speak(cue, enabled = activeSession?.cues.voice) {
-    if (!enabled || !audioContext || !VOICE_ASSETS[cue]) return;
+  async function speak(cues, enabled = activeSession?.cues.voice) {
+    const cueList = (Array.isArray(cues) ? cues : [cues]).filter((cue) => VOICE_ASSETS[cue]);
+    if (!enabled || !audioContext || !cueList.length) return;
     const requestId = ++voiceRequestId;
-    const buffer = await loadVoiceBuffer(cue);
-    if (!buffer || requestId !== voiceRequestId) return;
+    const buffers = (await Promise.all(cueList.map(loadVoiceBuffer))).filter(Boolean);
+    if (!buffers.length || requestId !== voiceRequestId) return;
 
-    if (currentVoiceSource) {
-      try { currentVoiceSource.stop(); } catch (_) { /* already stopped */ }
-    }
+    currentVoiceSources.forEach((source) => {
+      try { source.stop(); } catch (_) { /* already stopped */ }
+    });
+    currentVoiceSources.clear();
 
-    const source = audioContext.createBufferSource();
     const gain = audioContext.createGain();
     gain.gain.value = 1;
-    source.buffer = buffer;
-    source.connect(gain).connect(audioContext.destination);
-    currentVoiceSource = source;
-    source.addEventListener('ended', () => {
-      if (currentVoiceSource === source) currentVoiceSource = null;
-    }, { once: true });
-    source.start();
+    gain.connect(audioContext.destination);
+
+    let startAt = audioContext.currentTime;
+    buffers.forEach((buffer, index) => {
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(gain);
+      currentVoiceSources.add(source);
+      source.addEventListener('ended', () => currentVoiceSources.delete(source), { once: true });
+      source.start(startAt);
+      startAt += Math.max(0.04, buffer.duration - (index < buffers.length - 1 ? 0.045 : 0));
+    });
+  }
+
+  function numberVoiceCues(value) {
+    const number = Math.max(0, Math.min(3600, Math.round(Number(value) || 0)));
+    if (number === 0) return ['number-0'];
+
+    const cues = [];
+    let remainder = number;
+    [1000, 100, 10, 1].forEach((unit) => {
+      const digit = Math.floor(remainder / unit);
+      remainder %= unit;
+      if (!digit) return;
+      if (unit === 1 || digit > 1) cues.push(`number-${digit}`);
+      if (unit > 1) cues.push(`number-${unit}`);
+    });
+    return cues;
+  }
+
+  function customExerciseVoiceCue(label) {
+    const normalized = String(label || '').trim().replace(/\s+/g, ' ');
+    return CUSTOM_EXERCISE_VOICE_CUES[normalized] || 'custom';
   }
 
   function phaseVoiceCue(phase, session = activeSession) {
-    if (phase.type === 'prep') return 'prep';
-    if (phase.type === 'rest') return 'rest';
-    if (session.mode === 'custom') return 'custom';
-    if (session.mode === 'emom') return 'emom';
-    if (session.mode === 'hyrox') return `hyrox-${String(phase.round).padStart(2, '0')}`;
-    if (session.mode === 'fortime') return 'fortime';
-    if (session.mode === 'amrap') return 'amrap';
-    return 'set';
+    if (phase.type === 'prep') return ['prep'];
+    if (phase.type === 'rest') {
+      return [...numberVoiceCues(phase.durationMs / 1000), 'rest-suffix'];
+    }
+    if (session.mode === 'custom') return [customExerciseVoiceCue(phase.label)];
+    if (session.mode === 'interval') return ['interval'];
+    if (session.mode === 'tabata') return ['tabata'];
+    if (session.mode === 'emom') return ['emom'];
+    if (session.mode === 'hyrox') return [`hyrox-${String(phase.round).padStart(2, '0')}`];
+    if (session.mode === 'fortime') return ['fortime'];
+    if (session.mode === 'amrap') return ['amrap'];
+    return ['set'];
   }
 
   async function prepareSessionVoice(session) {
     if (!session?.cues.voice || !audioContext) return;
-    const cues = [...new Set(session.phases.map((phase) => phaseVoiceCue(phase, session)))];
-    if (cues[0]) await loadVoiceBuffer(cues[0]);
-    cues.slice(1).forEach((cue) => { loadVoiceBuffer(cue); });
+    const phaseCueLists = session.phases.map((phase) => phaseVoiceCue(phase, session));
+    const firstCues = phaseCueLists[0] || [];
+    await Promise.all(firstCues.map(loadVoiceBuffer));
+    const remainingCues = [...new Set(phaseCueLists.slice(1).flat())];
+    remainingCues.forEach((cue) => { loadVoiceBuffer(cue); });
   }
 
   async function testAudioOutput() {

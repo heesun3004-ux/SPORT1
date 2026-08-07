@@ -56,14 +56,47 @@ test("arena transition buzzers are prominent and never overlap voice guidance", 
 test("voice cues share the media audio path used by Bluetooth speakers", () => {
   assert.match(appCode, /const VOICE_ASSETS/);
   assert.match(appCode, /audioContext\.createBufferSource\(\)/);
-  assert.match(appCode, /source\.connect\(gain\)\.connect\(audioContext\.destination\)/);
+  assert.match(appCode, /gain\.connect\(audioContext\.destination\)/);
+  assert.match(appCode, /source\.connect\(gain\)/);
   assert.match(appCode, /navigator\.mediaDevices\.selectAudioOutput\(\)/);
   assert.match(appCode, /audioContext\.setSinkId\(device\.deviceId\)/);
   assert.match(markup, /id="testAudioOutput"/);
   assert.match(markup, /id="selectAudioOutput"/);
   assert.doesNotMatch(appCode, /speechSynthesis|SpeechSynthesisUtterance/);
 
-  for (const filename of ["prep", "rest", "set", "warning", "complete", "output-test"]) {
+  for (const filename of ["prep", "rest-suffix", "interval", "tabata", "warning", "complete", "output-test"]) {
+    const asset = path.join(root, "public", "audio", "voice", `${filename}.wav`);
+    assert.ok(fs.statSync(asset).size > 4096, `${filename}.wav should contain audio data`);
+  }
+});
+
+test("transitions announce exact rest seconds and the next workout name", () => {
+  assert.match(appCode, /function numberVoiceCues/);
+  assert.match(appCode, /phase\.durationMs \/ 1000/);
+  assert.match(appCode, /'rest-suffix'/);
+  assert.match(appCode, /function customExerciseVoiceCue/);
+  assert.match(appCode, /CUSTOM_EXERCISE_VOICE_CUES/);
+  assert.match(appCode, /session\.mode === 'hyrox'/);
+  assert.match(appCode, /session\.mode === 'interval'/);
+  assert.match(appCode, /session\.mode === 'tabata'/);
+  assert.match(appCode, /phaseVoiceCue\(phase\)/);
+
+  const numberFunctionSource = appCode.match(
+    /(function numberVoiceCues[\s\S]*?\n  })\n\n  function customExerciseVoiceCue/,
+  )?.[1];
+  assert.ok(numberFunctionSource, "numberVoiceCues should be extractable for behavior tests");
+  const numberVoiceCues = Function(`${numberFunctionSource}; return numberVoiceCues;`)();
+  assert.deepEqual(numberVoiceCues(0), ["number-0"]);
+  assert.deepEqual(numberVoiceCues(10), ["number-10"]);
+  assert.deepEqual(numberVoiceCues(30), ["number-3", "number-10"]);
+  assert.deepEqual(numberVoiceCues(105), ["number-100", "number-5"]);
+  assert.deepEqual(numberVoiceCues(3600), ["number-3", "number-1000", "number-6", "number-100"]);
+
+  for (const filename of [
+    "number-0", "number-1", "number-2", "number-3", "number-4", "number-5",
+    "number-6", "number-7", "number-8", "number-9", "number-10", "number-100",
+    "number-1000", "exercise-burpee", "exercise-air-squat", "hyrox-01", "hyrox-16",
+  ]) {
     const asset = path.join(root, "public", "audio", "voice", `${filename}.wav`);
     assert.ok(fs.statSync(asset).size > 4096, `${filename}.wav should contain audio data`);
   }
@@ -126,11 +159,12 @@ test("custom programs can be composed, saved, and run through the timer engine",
 
 test("the service worker refreshes the custom navigation release", () => {
   const worker = fs.readFileSync(path.join(root, "public/sw.js"), "utf8");
-  assert.match(worker, /paceforge-v4-bluetooth-audio/);
+  assert.match(worker, /paceforge-v5-transition-cues/);
   assert.match(worker, /audio\/voice\/output-test\.wav/);
+  assert.match(worker, /audio\/voice\/rest-suffix\.wav/);
   assert.doesNotMatch(worker, /\/index\.html/);
   assert.doesNotMatch(worker, /\/styles\.css/);
-  assert.match(page, /app\.js\?v=20260807-bluetooth-audio/);
+  assert.match(page, /app\.js\?v=20260807-transition-cues/);
 });
 
 test("section copy is concise, functional, and readable on mobile", () => {
