@@ -25,8 +25,10 @@ npm run dev
 ```bash
 npm test
 npm run build
-npm start
+npx serve@latest out
 ```
+
+`next.config.ts`가 `output: "export"`(정적 내보내기)를 사용하므로 `npm start`(`next start`)는 동작하지 않습니다. 빌드 결과물은 `out` 폴더에 생성되며, 위 명령처럼 정적 파일 서버로 확인하세요.
 
 ## 환경변수
 
